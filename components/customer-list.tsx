@@ -13,6 +13,7 @@ import {
 import {
   careLabels,
   careOf,
+  daysLeft,
   fmtDate,
   matchesSearch,
   pkgLabel,
@@ -204,6 +205,7 @@ export default function CustomerList({
                 {shown.map((k) => (
                   <tr
                     key={k.id}
+                    data-urgency={urgencyOf(k)}
                     className={selected.has(k.id) ? "selected" : ""}
                   >
                     <td className="check-cell">
@@ -214,19 +216,26 @@ export default function CustomerList({
                         onChange={(e) => onSelect([k.id], e.target.checked)}
                       />
                     </td>
-                    <td>
-                      <button
-                        className="customer-name"
-                        onClick={() => onOpen(k.id)}
-                      >
-                        {k.name || "Chưa có tên"}
-                      </button>
-                      <small>
-                        {k.customId || "Chưa có mã"} · {pkgLabel(k.pkg)}
-                      </small>
-                      {k.bizName && k.bizName !== k.name && (
-                        <small>{k.bizName}</small>
-                      )}
+                    <td className="identity-cell">
+                      <div className="customer-identity">
+                        <span className="customer-initial" aria-hidden="true">
+                          {k.name.trim().charAt(0).toUpperCase() || "K"}
+                        </span>
+                        <div>
+                          <button
+                            className="customer-name"
+                            onClick={() => onOpen(k.id)}
+                          >
+                            {k.name || "Chưa có tên"}
+                          </button>
+                          <small>
+                            {k.customId || "Chưa có mã"} · {pkgLabel(k.pkg)}
+                          </small>
+                          {k.bizName && k.bizName !== k.name && (
+                            <small>{k.bizName}</small>
+                          )}
+                        </div>
+                      </div>
                     </td>
                     <td>
                       <span>{k.contact || "—"}</span>
@@ -281,6 +290,7 @@ export default function CustomerList({
               <article
                 className={`customer-card ${selected.has(k.id) ? "selected" : ""}`}
                 key={k.id}
+                data-urgency={urgencyOf(k)}
               >
                 <div className="card-heading">
                   <input
@@ -365,4 +375,16 @@ export default function CustomerList({
       </div>
     </section>
   );
+}
+
+function urgencyOf(customer: Customer) {
+  if (customer.status === "inactive") return "quiet";
+  const days = daysLeft(customer.expireDate);
+  return days === null
+    ? "unknown"
+    : days < 0
+      ? "expired"
+      : days <= 7
+        ? "urgent"
+        : "normal";
 }

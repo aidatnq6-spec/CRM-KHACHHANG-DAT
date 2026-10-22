@@ -21,7 +21,7 @@ Mở http://127.0.0.1:3000. Để thử trên điện thoại cùng mạng, ch�
 - Tài khoản được phép giữ theo nguồn trong `lib/legacy-meta.json`; quyền thực tế do Firebase Authentication và `firestore.rules` quyết định. Không có mật khẩu trong mã ứng dụng mới.
 - Dữ liệu nằm tại `users/{uid}/cksCustomers/{customerId}`. Không cần nhập lại nếu đăng nhập cùng tài khoản/cùng Firebase project.
 - Chưa thay đổi rules hay triển khai hosting. File rules được giữ để tham khảo, không tự publish.
-- File Excel, JSON sao lưu, thư mục `backup` và file tài khoản được giữ nếu có; `.gitignore` loại khỏi commit. Chúng không nằm trong thư mục public và không được tự tải vào ứng dụng.
+- Các file Excel/JSON cũ đã được dọn khỏi thư mục gốc và `backup/`. Nguyên bản được lưu trong `archive/legacy-customer-data-2026-10-22.zip`, đã kiểm tra SHA-256 và được loại khỏi Git. Ứng dụng không đọc file ZIP này; chỉ giữ để khôi phục khi cần. Cấu hình trùng `firebaseConfig.txt`, Firebase CLI cũ và nhật ký không dùng đã được xóa. Xem [báo cáo dọn dẹp](docs/cleanup-report.md).
 
 ## Chức năng
 
@@ -44,6 +44,8 @@ npm.cmd run test:browser
 ```
 
 Browser tests dùng cổng 3100 và dữ liệu tổng hợp qua `NEXT_PUBLIC_CRM_TEST_MODE=1` chỉ trong development, không kết nối Firebase thật. Nếu dùng server đang chạy ở cổng 3100, server đó phải là chế độ test; tắt server thường trước khi test. Production bỏ qua hoàn toàn cờ này. Không đặt cờ này trong `.env.local` sử dụng hằng ngày.
+
+Server kiểm thử dùng thư mục build riêng `.next-tests` để có thể kiểm tra song song với server làm việc thường ngày.
 
 Trên Windows, nếu trình chạy test bị kẹt ở bước tắt web server, chạy riêng server test trong một terminal trước:
 

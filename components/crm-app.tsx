@@ -283,9 +283,6 @@ export default function CRMApp() {
         <main id="main-content" className="main-content">
           <div className="page-heading no-print">
             <div>
-              <span className="section-note">
-                {fmtDate(today)} · CRM chữ ký số
-              </span>
               <h1>{activeNav.label}</h1>
               <p>
                 {page === "reminders"
@@ -301,6 +298,12 @@ export default function CRMApp() {
                           : "Theo dõi hoạt động và hiệu quả chăm sóc khách hàng."}
               </p>
             </div>
+            {page !== "customers" && (
+              <span className="page-date">
+                <CalendarClock size={16} />
+                {fmtDate(today)}
+              </span>
+            )}
             {page === "customers" && (
               <button
                 className="button secondary"

@@ -50,7 +50,9 @@ export function ExpiryBadge({ customer }: { customer: Customer }) {
   const d = daysLeft(customer.expireDate),
     status = statusOf(customer);
   return (
-    <span className={`badge expiry-${status}`}>
+    <span
+      className={`badge expiry-${status}${status === "expiring" && d !== null && d <= 7 ? " is-urgent" : ""}`}
+    >
       {status === "inactive" || d === null
         ? statusLabels[status]
         : d < 0

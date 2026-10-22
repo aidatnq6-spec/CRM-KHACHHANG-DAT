@@ -111,8 +111,7 @@ export default function Reports({
   return (
     <div className="workspace-stack report-area">
       <div className="report-title">
-        <div>
-          <span className="section-note">Bức tranh khách hàng</span>
+        <div className="report-print-heading">
           <h2>{dashboard ? "Tổng quan hoạt động" : "Báo cáo & phân tích"}</h2>
           <p>Cập nhật theo dữ liệu hiện tại · {fmtDate(todayVN())}</p>
         </div>

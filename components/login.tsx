@@ -5,6 +5,7 @@ import {
   CalendarClock,
   Eye,
   EyeOff,
+  MessageSquare,
   ShieldCheck,
 } from "lucide-react";
 import { readableError, useCRM } from "./crm-provider";
@@ -44,10 +45,29 @@ export default function Login() {
             Theo dõi hạn chữ ký số, chủ động liên hệ và đồng hành cùng khách
             hàng.
           </p>
-          <div className="login-note">
-            <span className="pulse-dot" />
-            Mọi lịch hẹn, trong một nơi.
-          </div>
+          <ol
+            className="login-steps"
+            aria-label="Hành trình chăm sóc khách hàng"
+          >
+            <li>
+              <span>
+                <CalendarClock size={16} />
+              </span>
+              Theo dõi từng kỳ hạn
+            </li>
+            <li>
+              <span>
+                <MessageSquare size={16} />
+              </span>
+              Chủ động từng cuộc hẹn
+            </li>
+            <li>
+              <span>
+                <ShieldCheck size={16} />
+              </span>
+              Tiếp nối mỗi lần gia hạn
+            </li>
+          </ol>
         </div>
         <small>Không bỏ lỡ một kỳ gia hạn.</small>
       </section>
