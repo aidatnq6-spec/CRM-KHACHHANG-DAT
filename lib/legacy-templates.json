@@ -1,0 +1,38 @@
+[
+  {
+    "key": "expire_30",
+    "name": "Sắp hết hạn 30 ngày",
+    "desc": "Dùng cho khách còn 8-30 ngày",
+    "body": "Chào {ten_lien_he}! 🙏\n\nChứng thư số của {ten_cong_ty} sắp hết hạn vào {ngay_het_han} (còn {so_ngay_con_lai} ngày).\n\nBên em có gói gia hạn 1-3 năm, hỗ trợ kích hoạt miễn phí tận nơi hoặc qua UltraViewer. Mình muốn em tư vấn gói phù hợp không ạ?"
+  },
+  {
+    "key": "expire_7",
+    "name": "Còn 7 ngày",
+    "desc": "Dùng cho khách còn 0-7 ngày",
+    "body": "Chào {ten_lien_he}! 🙏\n\nChứng thư số của {ten_cong_ty} chỉ còn {so_ngay_con_lai} ngày nữa là hết hạn. Nếu quá hạn có thể bị gián đoạn ký tờ khai thuế và hóa đơn điện tử.\n\nBên em hỗ trợ gia hạn nhanh trong ngày. Anh/chị muốn em xử lý trước để không bị gián đoạn không ạ?"
+  },
+  {
+    "key": "expired",
+    "name": "Đã hết hạn",
+    "desc": "Dùng cho khách đã quá hạn",
+    "body": "Chào {ten_lien_he}! 🙏\n\nChứng thư số của {ten_cong_ty} đã hết hạn {so_ngay_qua_han} ngày rồi ạ. Hiện tại việc ký tờ khai/hóa đơn có thể bị ảnh hưởng.\n\nBên em có thể hỗ trợ gia hạn và kích hoạt lại nhanh. Anh/chị cho em xin xác nhận để em làm ngay nhé?"
+  },
+  {
+    "key": "business",
+    "name": "Khách doanh nghiệp",
+    "desc": "Dùng cho công ty/MST rõ ràng",
+    "body": "Chào anh/chị {ten_lien_he}, em nhắc lịch chứng thư số của {ten_cong_ty} - MST {mst}.\n\nChứng thư sẽ hết hạn vào {ngay_het_han}. Bên em hỗ trợ gia hạn, xuất hóa đơn và kích hoạt để doanh nghiệp không gián đoạn kê khai.\n\nAnh/chị muốn em gửi báo giá gói 1-3 năm để mình chọn phương án phù hợp không ạ?"
+  },
+  {
+    "key": "personal",
+    "name": "Khách cá nhân",
+    "desc": "Dùng cho khách không có thông tin doanh nghiệp",
+    "body": "Chào {ten_lien_he}! 🙏\n\nEm nhắc chứng thư số của mình sẽ hết hạn vào {ngay_het_han} ({tinh_trang_han}).\n\nBên em hỗ trợ gia hạn nhanh, hướng dẫn kích hoạt từ xa. Mình muốn em tư vấn gói phù hợp không ạ?"
+  },
+  {
+    "key": "payment",
+    "name": "Nhắc thanh toán",
+    "desc": "Dùng khi cần nhắc phí/gói",
+    "body": "Chào {ten_lien_he}! 🙏\n\nEm gửi nhắc thanh toán phí gia hạn chứng thư số cho {ten_cong_ty}. Gói hiện tại: {goi_cuoc}, phí dự kiến: {gia_tien}.\n\nSau khi mình chuyển khoản/xác nhận, bên em sẽ tiến hành gia hạn và hỗ trợ kích hoạt ngay ạ."
+  }
+]

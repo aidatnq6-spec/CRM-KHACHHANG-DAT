@@ -1,0 +1,327 @@
+import { Timestamp } from "firebase/firestore";
+import { createCustomerId } from "./ids";
+import columns from "./legacy-columns.json";
+import {
+  careLabels,
+  careOf,
+  duplicateOf,
+  fmtDate,
+  normalizeDate,
+  normalizeText,
+  pkgLabel,
+  statusLabels,
+  statusOf,
+} from "./domain";
+import type { Customer, CustomerPatch } from "./types";
+import type { WriteOperation } from "./repository";
+export function download(
+  name: string,
+  content: string,
+  type = "application/json",
+) {
+  const blob = new Blob([content], { type }),
+    url = URL.createObjectURL(blob),
+    a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+export function backupPayload(rows: Customer[], email: string, uid: string) {
+  return {
+    app: "crm-cks",
+    exportedAt: new Date().toISOString(),
+    sourceEmail: email,
+    sourceUid: uid,
+    count: rows.length,
+    customers: rows.map((k) => {
+      const data = { ...k };
+      delete (data as Partial<Customer>).id;
+      return { id: k.id, data };
+    }),
+  };
+}
+function revive(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(revive);
+  if (value && typeof value === "object") {
+    const o = value as Record<string, unknown>;
+    const seconds = o.seconds ?? o._seconds,
+      nanos = o.nanoseconds ?? o._nanoseconds;
+    if (
+      typeof seconds === "number" &&
+      typeof nanos === "number" &&
+      (Object.keys(o).length === 2 ||
+        (Object.keys(o).length === 3 && o.type === "firestore/timestamp/1.0"))
+    )
+      return new Timestamp(seconds, nanos);
+    return Object.fromEntries(
+      Object.entries(o)
+        .filter(
+          ([key]) => !["__proto__", "prototype", "constructor"].includes(key),
+        )
+        .map(([key, val]) => [key, revive(val)]),
+    );
+  }
+  return value;
+}
+export function parseBackup(payload: unknown): WriteOperation[] {
+  if (
+    !payload ||
+    typeof payload !== "object" ||
+    !Array.isArray((payload as { customers?: unknown }).customers)
+  )
+    throw new Error(
+      "JSON không đúng định dạng CRM: thiếu danh sách customers.",
+    );
+  const items = (payload as { customers: unknown[] }).customers,
+    ids = new Set<string>();
+  if (!items.length) throw new Error("File không có khách hàng.");
+  if (items.length > 50000)
+    throw new Error("File quá lớn, tối đa 50.000 khách mỗi lần.");
+  return items.map((raw, i) => {
+    if (!raw || typeof raw !== "object")
+      throw new Error(`Bản ghi ${i + 1} không hợp lệ.`);
+    const item = raw as Record<string, unknown>;
+    const data = revive(item.data || item) as Record<string, unknown>;
+    if (
+      !data ||
+      Array.isArray(data) ||
+      typeof data !== "object" ||
+      typeof data.name !== "string" ||
+      !data.name.trim()
+    )
+      throw new Error(`Bản ghi ${i + 1} thiếu tên khách.`);
+    const id = String(item.id || data.id || createCustomerId());
+    if (
+      !id ||
+      id.includes("/") ||
+      /^__.*__$/.test(id) ||
+      id === "." ||
+      id === ".." ||
+      new TextEncoder().encode(id).length > 1500 ||
+      ids.has(id)
+    )
+      throw new Error(
+        `ID bản ghi ${i + 1} không hợp lệ hoặc bị trùng trong file.`,
+      );
+    ids.add(id);
+    delete data.id;
+    return { id, data: data as CustomerPatch, preserveTimestamps: true };
+  });
+}
+export type ImportRow = { row: number; data: CustomerPatch; errors: string[] };
+const oldPositions = [
+  "name",
+  "mst",
+  "pkgRaw",
+  "bizName",
+  "mstHD",
+  "address",
+  "price",
+  "note2",
+  "priceKM",
+  "sendHH",
+  "expireDate",
+  "paid",
+  "phone",
+  "loginDVC",
+];
+const columnMap: Record<string, string> = {
+  ...columns,
+  "trang thai cham soc": "careStatus",
+  "ngay hen": "followUpDate",
+  "ghi chu lich hen": "followUpNote",
+};
+const mappedField = (header: string) =>
+  Object.hasOwn(columnMap, header) ? columnMap[header] : "";
+export function parseGrid(grid: unknown[][]): ImportRow[] {
+  const scored = grid.slice(0, 25).map((row, index) => ({
+    index,
+    score: row.filter((h) => mappedField(normalizeText(h))).length,
+  }));
+  const header = scored.sort((a, b) => b.score - a.score)[0];
+  if (!header || header.score < 2)
+    throw new Error(
+      "Không nhận ra tiêu đề. Hãy dùng file mẫu hoặc chọn đúng trang tính.",
+    );
+  const labels = grid[header.index].map(normalizeText);
+  const old =
+    labels.includes("thong tin chu ky so") && labels.includes("mst/cmnd/cccd");
+  const fields = old ? oldPositions : labels.map(mappedField);
+  const start = header.index + (old ? 2 : 1);
+  return grid.slice(start).flatMap((row, i) => {
+    if (!row.some((v) => v !== "" && v != null)) return [];
+    const data: Record<string, unknown> = {},
+      errors: string[] = [];
+    fields.forEach((key, ci) => {
+      if (key && row[ci] !== undefined && row[ci] !== "")
+        data[key] = typeof row[ci] === "string" ? row[ci].trim() : row[ci];
+    });
+    if (!data.name) data.name = data.customId || "";
+    if (!String(data.name).trim()) errors.push("Thiếu tên khách");
+    if (!data.mst && data.mstHD) data.mst = data.mstHD;
+    delete data.mstHD;
+    if (data.pkgRaw !== undefined) {
+      data.pkg = String(data.pkgRaw);
+      delete data.pkgRaw;
+    }
+    if (data.statusRaw !== undefined) {
+      data.status = /ngừng|dừng|inactive/i.test(String(data.statusRaw))
+        ? "inactive"
+        : "active";
+      delete data.statusRaw;
+    }
+    for (const key of ["issueDate", "expireDate", "followUpDate"])
+      if (data[key] != null) {
+        const date = normalizeDate(data[key]);
+        if (!date) errors.push(`Ngày không hợp lệ: ${key}`);
+        else data[key] = date;
+      }
+    if (
+      data.issueDate &&
+      data.expireDate &&
+      String(data.issueDate) > String(data.expireDate)
+    )
+      errors.push("Hết hạn trước ngày cấp");
+    if (data.price !== undefined) {
+      const raw = data.price;
+      const normalized =
+        typeof raw === "number"
+          ? raw
+          : Number(
+              String(raw)
+                .replace(/(?:vnd|đ|₫|\s)/gi, "")
+                .replace(/[.,](?=\d{3}(?:[.,]|$))/g, "")
+                .replace(",", "."),
+            );
+      if (!Number.isFinite(normalized) || normalized < 0)
+        errors.push("Giá tiền không hợp lệ");
+      else data.price = normalized;
+    }
+    for (const key of [
+      "phone",
+      "mst",
+      "customId",
+      "name",
+      "contact",
+      "bizName",
+    ])
+      if (data[key] !== undefined) data[key] = String(data[key]);
+    for (const key of ["paid", "sendHH"])
+      if (key in data) data[key] = /^x$|^true$/i.test(String(data[key]));
+    if (data.careStatus && !(String(data.careStatus) in careLabels))
+      errors.push("Trạng thái chăm sóc không hợp lệ");
+    return [{ row: start + i + 1, data: data as CustomerPatch, errors }];
+  });
+}
+export function planExcelImport(
+  entries: ImportRow[],
+  existing: Customer[],
+  mode: "skip" | "update",
+) {
+  const index = [...existing],
+    map = new Map<string, WriteOperation>();
+  let skipped = 0,
+    updated = 0,
+    added = 0,
+    suspected = 0;
+  for (const row of entries) {
+    if (row.errors.length) {
+      skipped++;
+      continue;
+    }
+    const duplicate = duplicateOf(row.data, index);
+    if (duplicate?.strength === "strong" && mode === "skip") {
+      skipped++;
+      continue;
+    }
+    if (duplicate?.strength === "soft") suspected++;
+    const id =
+      duplicate?.strength === "strong"
+        ? duplicate.customer.id
+        : createCustomerId();
+    if (duplicate?.strength === "strong") updated++;
+    else added++;
+    const previous = map.get(id)?.data || {};
+    map.set(id, { id, data: { ...previous, ...row.data } });
+    const at = index.findIndex((k) => k.id === id);
+    const next = { ...(at >= 0 ? index[at] : {}), ...row.data, id } as Customer;
+    if (at >= 0) index[at] = next;
+    else index.push(next);
+  }
+  return { operations: [...map.values()], skipped, updated, added, suspected };
+}
+export const excelHeaders: Record<string, string> = {
+  customId: "Mã ID",
+  name: "Tên khách hàng",
+  contact: "Tên liên hệ",
+  mst: "Mã số thuế",
+  bizName: "Tên công ty",
+  address: "Địa chỉ",
+  phone: "Số điện thoại",
+  pkg: "Gói cước",
+  price: "Giá tiền (VND)",
+  issueDate: "Ngày cấp",
+  expireDate: "Ngày hết hạn",
+  status: "Trạng thái",
+  note2: "Ghi chú NCC",
+  note: "Ghi chú chi tiết",
+  careStatus: "Trạng thái chăm sóc",
+  followUpDate: "Ngày hẹn",
+  followUpNote: "Ghi chú lịch hẹn",
+};
+export const excelSafe = (value: unknown) =>
+  typeof value === "string" && /^[=+@\-\t\r]/.test(value)
+    ? "'" + value
+    : (value ?? "");
+export async function exportExcel(rows: Customer[], template = false) {
+  const XLSX = await import("xlsx");
+  const grid: unknown[][] = [
+    Object.values(excelHeaders),
+    ...rows.map((k) =>
+      Object.keys(excelHeaders).map((key) =>
+        excelSafe(key === "pkg" ? pkgLabel(k.pkg) : k[key]),
+      ),
+    ),
+  ];
+  if (template)
+    grid.push([
+      "KH0001",
+      "Khách hàng mẫu",
+      "",
+      "",
+      "",
+      "",
+      "0901234567",
+      "Gói 1 năm",
+      1200000,
+      "2026-10-22",
+      "2027-10-22",
+      "active",
+      "",
+      "",
+      "not_contacted",
+      "",
+      "",
+    ]);
+  const sheet = XLSX.utils.aoa_to_sheet(grid);
+  sheet["!cols"] = Object.keys(excelHeaders).map(() => ({ wch: 23 }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, sheet, "Khách hàng");
+  XLSX.writeFile(wb, template ? "Mau_Import_CRM_CKS.xlsx" : "CRM_CKS.xlsx");
+}
+export async function exportReportExcel(rows: Customer[]) {
+  const XLSX = await import("xlsx");
+  const sheet = XLSX.utils.json_to_sheet(
+    rows.map((k) => ({
+      "Khách hàng": excelSafe(k.name),
+      "Ngày hết hạn": fmtDate(k.expireDate),
+      "Trạng thái": statusLabels[statusOf(k)],
+      "Chăm sóc": careLabels[careOf(k)],
+      Giá: Number(k.price) || 0,
+    })),
+  );
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, sheet, "Báo cáo");
+  XLSX.writeFile(wb, "Bao_cao_CRM_CKS.xlsx");
+}
