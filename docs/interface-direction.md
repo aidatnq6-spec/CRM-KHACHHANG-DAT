@@ -54,3 +54,12 @@ Chạy các luồng hiện có với dữ liệu tổng hợp, kiểm tra ảnh 
 - Hẹn lại mở form ngay trong thẻ, chọn từ ngày mai và yêu cầu nội dung hẹn. Lưu lịch và nhật ký trong cùng một cập nhật, giữ trạng thái chăm sóc và lần liên hệ cũ; sự kiện đặt lịch không được tính như chăm sóc trong báo cáo.
 - Sau khi lưu thành công, chuyển focus đến khách kế tiếp phù hợp với bộ lọc tại vị trí thẻ vừa xử lý. Nếu đó là khách cuối, focus đến tiêu đề nhóm; bộ lọc giữ nguyên. Lỗi lưu giữ thẻ và nội dung nhập. Mở hồ sơ hoặc Zalo giữ màn hình công việc được gắn, do đó bộ lọc và ghi chú nháp còn nguyên.
 - Quá hẹn / Hẹn hôm nay / Sắp đến hẹn dùng nhãn chữ và màu riêng. Mobile dùng thẻ một cột, bộ lọc cuộn ngang trong vùng riêng và các nút từ 44px.
+
+## Dashboard hướng tới hành động
+
+- Dashboard được tách khỏi Báo cáo chi tiết. Bốn chỉ số mở đúng nhóm: khách quá hẹn → bộ lọc Quá hẹn của Công việc hôm nay; CKS trong 7 ngày → nhắc hạn 7 ngày; chưa liên hệ trong nhóm 30 ngày → nhắc hạn 30 ngày có bộ lọc Chưa liên hệ; giá trị dự kiến → toàn bộ nhóm nhắc hạn 30 ngày.
+- Giá trị dự kiến dùng cùng phép tính của Báo cáo; có chú thích rõ không phải tiền đã thu và số khách thiếu giá phải tạm tính theo giá trung bình.
+- Ưu tiên hôm nay và lịch hẹn đặt cạnh nhau ở desktop rộng, xếp dọc ở màn hình nhỏ. Ưu tiên tối đa 5 khách; lịch hiển thị hôm nay và 6 ngày tiếp theo. Bấm ngày để xem đầy đủ khách hẹn, có phân trang 5 khách và mở hồ sơ; giữ lựa chọn khi đóng hồ sơ.
+- Biểu đồ 6 tháng tính từ hôm nay đến hết tháng thứ sáu, kể cả phần còn lại của tháng hiện tại. Chỉ tính ngày hợp lệ, chưa qua hạn và khách đang hoạt động. Mỗi cột có số, nhãn tháng, trạng thái chọn và thao tác bàn phím; cột 0 có chiều cao 0. Bấm tháng mở danh sách tương ứng, có phân trang.
+- Kết quả chăm sóc có kỳ 7/30/90 ngày, bao gồm hôm nay, dùng lịch Việt Nam cho dấu thời gian. Đếm khách duy nhất có nhật ký chăm sóc thực tế; loại sao chép/script và chỉ đặt lịch. Gia hạn đếm khách có giao dịch lịch sử không phải bản ghi hiện tại hoặc xác nhận gia hạn trong kỳ. Hai nhóm độc lập, không trình bày thành tỷ lệ chuyển đổi hay tiền đã thu.
+- Có trạng thái trống cho ngày, tháng, kết quả và tài khoản chưa có dữ liệu. Mobile ưu tiên chỉ số và khách cần xử lý, các biểu đồ nằm sau.

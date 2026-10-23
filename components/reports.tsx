@@ -13,7 +13,6 @@ import {
   todayVN,
   fmtDate,
 } from "@/lib/domain";
-import { matchesWorkFilter, workQueue } from "@/lib/work-queue";
 import { exportReportExcel } from "@/lib/transfer";
 import type { Customer, Page } from "@/lib/types";
 import { readableError, useCRM } from "./crm-provider";
@@ -125,11 +124,9 @@ export function Funnel({ rows }: { rows: Customer[] }) {
   );
 }
 export default function Reports({
-  dashboard = false,
   onNavigate,
   onOpen,
 }: {
-  dashboard?: boolean;
   onNavigate: (p: Page, range?: string) => void;
   onOpen: (id: string) => void;
 }) {
@@ -143,32 +140,25 @@ export default function Reports({
     1,
     ...months.map((month) => month.issuedValue),
   );
-  const priority = dashboard
-    ? workQueue(crm.rows)
-        .filter((item) => matchesWorkFilter(item, "all"))
-        .slice(0, 5)
-    : [];
   const active = crm.rows.filter((k) => statusOf(k) === "active").length,
     overdue = crm.rows.filter((k) => statusOf(k) === "expired").length;
   const upcoming = expiring(crm.rows);
   return (
     <div className="workspace-stack report-area">
       <div className="report-title">
-        {!dashboard && (
-          <label className="report-period no-print">
-            Kỳ xem lịch sử
-            <select
-              aria-label="Kỳ xem lịch sử"
-              value={monthCount}
-              onChange={(e) => setMonthCount(Number(e.target.value))}
-            >
-              <option value={3}>3 tháng gần nhất</option>
-              <option value={6}>6 tháng gần nhất</option>
-            </select>
-          </label>
-        )}
+        <label className="report-period no-print">
+          Kỳ xem lịch sử
+          <select
+            aria-label="Kỳ xem lịch sử"
+            value={monthCount}
+            onChange={(e) => setMonthCount(Number(e.target.value))}
+          >
+            <option value={3}>3 tháng gần nhất</option>
+            <option value={6}>6 tháng gần nhất</option>
+          </select>
+        </label>
         <div className="report-print-heading">
-          <h2>{dashboard ? "Tổng quan hoạt động" : "Báo cáo & phân tích"}</h2>
+          <h2>Báo cáo & phân tích</h2>
           <p>Cập nhật theo dữ liệu hiện tại · {fmtDate(todayVN())}</p>
         </div>
         <div className="inline-actions no-print">
@@ -195,13 +185,11 @@ export default function Reports({
           </button>
         </div>
       </div>
-      {!dashboard && (
-        <p className="report-scope">
-          Kỳ xem áp dụng cho bảng chăm sóc và biểu đồ theo tháng. Các chỉ số
-          tổng hợp, dự kiến gia hạn và file xuất vẫn tính trên toàn bộ dữ liệu
-          hiện tại.
-        </p>
-      )}
+      <p className="report-scope">
+        Kỳ xem áp dụng cho bảng chăm sóc và biểu đồ theo tháng. Các chỉ số tổng
+        hợp, dự kiến gia hạn và file xuất vẫn tính trên toàn bộ dữ liệu hiện
+        tại.
+      </p>
       {error && <div className="alert error">{error}</div>}
       <Stats
         items={[
@@ -239,42 +227,6 @@ export default function Reports({
         />
       ) : (
         <>
-          {dashboard && (
-            <section className="content-panel priority-panel">
-              <div className="panel-heading">
-                <div>
-                  <h3>Ưu tiên hôm nay</h3>
-                  <p>Lịch hẹn đến hạn và khách cần liên hệ sớm.</p>
-                </div>
-                <button
-                  className="text-button"
-                  onClick={() => onNavigate("today")}
-                >
-                  Mở công việc hôm nay <ArrowUpRight size={16} />
-                </button>
-              </div>
-              {priority.length ? (
-                priority.map((task) => (
-                  <button
-                    className="forecast-row"
-                    key={task.customer.id}
-                    onClick={() => onOpen(task.customer.id)}
-                  >
-                    <div>
-                      <strong>{task.customer.name}</strong>
-                      <small>{task.title}</small>
-                    </div>
-                    <span>
-                      {task.detail}
-                      <ArrowUpRight size={16} />
-                    </span>
-                  </button>
-                ))
-              ) : (
-                <p className="muted">Không có công việc cần ưu tiên hôm nay.</p>
-              )}
-            </section>
-          )}
           <div className="two-columns">
             <Funnel rows={crm.rows} />
             <section className="content-panel">
@@ -329,157 +281,147 @@ export default function Reports({
               },
             ]}
           />
-          {!dashboard && (
-            <section className="content-panel">
-              <div className="panel-heading">
-                <div>
-                  <h3>Dự kiến gia hạn trong 90 ngày</h3>
-                  <p>
-                    {expiring(crm.rows, 90).length} khách · Giá trị tham khảo từ
-                    gói hiện tại.
-                  </p>
-                </div>
-                <button
-                  className="text-button no-print"
-                  onClick={() => onNavigate("reminders", "90")}
-                >
-                  Xem tất cả <ArrowUpRight size={16} />
-                </button>
+          <section className="content-panel">
+            <div className="panel-heading">
+              <div>
+                <h3>Dự kiến gia hạn trong 90 ngày</h3>
+                <p>
+                  {expiring(crm.rows, 90).length} khách · Giá trị tham khảo từ
+                  gói hiện tại.
+                </p>
               </div>
-              <div className="forecast-list">
-                {expiring(crm.rows, 90)
-                  .slice(0, 8)
-                  .map((k) => (
-                    <button
-                      className="forecast-row"
-                      onClick={() => onOpen(k.id)}
-                      key={k.id}
-                    >
-                      <div>
-                        <strong>{k.name}</strong>
-                        <small>{pkgLabel(k.pkg)}</small>
-                      </div>
-                      <div>
-                        <span>{fmtDate(k.expireDate)}</span>
-                        <strong>
-                          {money(Number(k.price) || data.average)}
-                        </strong>
-                      </div>
-                    </button>
-                  ))}
-              </div>
-            </section>
-          )}
-          {!dashboard && (
-            <section className="content-panel">
-              <div className="panel-heading">
-                <div>
-                  <h3>Hiệu quả chăm sóc {monthCount} tháng</h3>
-                  <p>
-                    Số khách duy nhất trong từng tháng; doanh thu lấy từ lịch sử
-                    gia hạn.
-                  </p>
-                </div>
-              </div>
-              <div className="table-scroll">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Tháng</th>
-                      <th>Zalo / sao chép</th>
-                      <th>Đã gọi</th>
-                      <th>Đã chăm sóc</th>
-                      <th>Gia hạn</th>
-                      <th>Từ chối</th>
-                      <th>Giá trị gia hạn</th>
-                      <th>Chuyển đổi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {months.map((m) => (
-                      <tr key={m.key}>
-                        <td>{m.key}</td>
-                        <td>{m.zalo.size}</td>
-                        <td>{m.called.size}</td>
-                        <td>{m.touched.size}</td>
-                        <td>{m.renewed.size}</td>
-                        <td>{m.declined.size}</td>
-                        <td>{money(m.revenue)}</td>
-                        <td>
-                          {m.touched.size
-                            ? Math.round(
-                                (m.renewed.size / m.touched.size) * 100,
-                              )
-                            : 0}
-                          %
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="muted footnote">
-                Tỷ lệ chuyển đổi = số khách gia hạn / số khách đã chăm sóc trong
-                tháng. Hai nhóm được thống kê độc lập theo nhật ký và giao dịch.
-              </p>
-            </section>
-          )}
-          {!dashboard && (
-            <div className="two-columns">
-              <section className="content-panel">
-                <div className="panel-heading">
-                  <div>
-                    <h3>Giá trị dịch vụ theo tháng cấp</h3>
-                    <p>Tổng giá hiện tại, nhóm theo ngày cấp dịch vụ.</p>
-                  </div>
-                </div>
-                <div
-                  className="monthly-chart"
-                  role="img"
-                  aria-label={`Biểu đồ giá trị dịch vụ theo ngày cấp ${monthCount} tháng`}
-                >
-                  {months.map((m) => (
-                    <div key={m.key}>
-                      <small>{money(m.issuedValue)}</small>
-                      <div className="chart-column">
-                        <div
-                          style={{
-                            height: `${Math.max(1, (m.issuedValue / maxIssuedValue) * 100)}%`,
-                          }}
-                        />
-                      </div>
-                      <span>
-                        {m.key.slice(5)}/{m.key.slice(2, 4)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-              <section className="content-panel">
-                <div className="panel-heading">
-                  <div>
-                    <h3>Khách hàng giá trị cao</h3>
-                    <p>Tổng giao dịch lịch sử và dịch vụ hiện tại.</p>
-                  </div>
-                </div>
-                <ol className="top-customers">
-                  {data.top.map((k, i) => (
-                    <li key={k.id}>
-                      <span className="rank">{i + 1}</span>
-                      <button
-                        className="customer-name"
-                        onClick={() => onOpen(k.id)}
-                      >
-                        {k.name}
-                        <small>{pkgLabel(k.pkg)}</small>
-                      </button>
-                      <strong>{money(lifetimeValue(k))}</strong>
-                    </li>
-                  ))}
-                </ol>
-              </section>
+              <button
+                className="text-button no-print"
+                onClick={() => onNavigate("reminders", "90")}
+              >
+                Xem tất cả <ArrowUpRight size={16} />
+              </button>
             </div>
-          )}
+            <div className="forecast-list">
+              {expiring(crm.rows, 90)
+                .slice(0, 8)
+                .map((k) => (
+                  <button
+                    className="forecast-row"
+                    onClick={() => onOpen(k.id)}
+                    key={k.id}
+                  >
+                    <div>
+                      <strong>{k.name}</strong>
+                      <small>{pkgLabel(k.pkg)}</small>
+                    </div>
+                    <div>
+                      <span>{fmtDate(k.expireDate)}</span>
+                      <strong>{money(Number(k.price) || data.average)}</strong>
+                    </div>
+                  </button>
+                ))}
+            </div>
+          </section>
+          <section className="content-panel">
+            <div className="panel-heading">
+              <div>
+                <h3>Hiệu quả chăm sóc {monthCount} tháng</h3>
+                <p>
+                  Số khách duy nhất trong từng tháng; doanh thu lấy từ lịch sử
+                  gia hạn.
+                </p>
+              </div>
+            </div>
+            <div className="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tháng</th>
+                    <th>Zalo / sao chép</th>
+                    <th>Đã gọi</th>
+                    <th>Đã chăm sóc</th>
+                    <th>Gia hạn</th>
+                    <th>Từ chối</th>
+                    <th>Giá trị gia hạn</th>
+                    <th>Chuyển đổi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {months.map((m) => (
+                    <tr key={m.key}>
+                      <td>{m.key}</td>
+                      <td>{m.zalo.size}</td>
+                      <td>{m.called.size}</td>
+                      <td>{m.touched.size}</td>
+                      <td>{m.renewed.size}</td>
+                      <td>{m.declined.size}</td>
+                      <td>{money(m.revenue)}</td>
+                      <td>
+                        {m.touched.size
+                          ? Math.round((m.renewed.size / m.touched.size) * 100)
+                          : 0}
+                        %
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="muted footnote">
+              Tỷ lệ chuyển đổi = số khách gia hạn / số khách đã chăm sóc trong
+              tháng. Hai nhóm được thống kê độc lập theo nhật ký và giao dịch.
+            </p>
+          </section>
+          <div className="two-columns">
+            <section className="content-panel">
+              <div className="panel-heading">
+                <div>
+                  <h3>Giá trị dịch vụ theo tháng cấp</h3>
+                  <p>Tổng giá hiện tại, nhóm theo ngày cấp dịch vụ.</p>
+                </div>
+              </div>
+              <div
+                className="monthly-chart"
+                role="img"
+                aria-label={`Biểu đồ giá trị dịch vụ theo ngày cấp ${monthCount} tháng`}
+              >
+                {months.map((m) => (
+                  <div key={m.key}>
+                    <small>{money(m.issuedValue)}</small>
+                    <div className="chart-column">
+                      <div
+                        style={{
+                          height: `${Math.max(1, (m.issuedValue / maxIssuedValue) * 100)}%`,
+                        }}
+                      />
+                    </div>
+                    <span>
+                      {m.key.slice(5)}/{m.key.slice(2, 4)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+            <section className="content-panel">
+              <div className="panel-heading">
+                <div>
+                  <h3>Khách hàng giá trị cao</h3>
+                  <p>Tổng giao dịch lịch sử và dịch vụ hiện tại.</p>
+                </div>
+              </div>
+              <ol className="top-customers">
+                {data.top.map((k, i) => (
+                  <li key={k.id}>
+                    <span className="rank">{i + 1}</span>
+                    <button
+                      className="customer-name"
+                      onClick={() => onOpen(k.id)}
+                    >
+                      {k.name}
+                      <small>{pkgLabel(k.pkg)}</small>
+                    </button>
+                    <strong>{money(lifetimeValue(k))}</strong>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          </div>
           <section className="content-panel print-only">
             <h3>Khách sắp hết hạn 30 ngày</h3>
             <table>

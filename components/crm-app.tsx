@@ -23,7 +23,11 @@ import {
   ChartNoAxesCombined,
 } from "lucide-react";
 import { careOf, daysLeft, expiring, fmtDate, todayVN } from "@/lib/domain";
-import { matchesWorkFilter, workQueue } from "@/lib/work-queue";
+import {
+  matchesWorkFilter,
+  workQueue,
+  type WorkFilter,
+} from "@/lib/work-queue";
 import { buildScript, defaultTemplates, loadTemplates } from "@/lib/templates";
 import type { Customer, Page, ZaloTemplate } from "@/lib/types";
 import { readableError, useCRM } from "./crm-provider";
@@ -34,6 +38,9 @@ import CustomerDetail from "./customer-detail";
 import CustomerForm from "./customer-form";
 import { Stats } from "./reports";
 const TodayWorkspace = dynamic(() => import("./today-workspace"), {
+  loading: () => <Spinner />,
+});
+const Dashboard = dynamic(() => import("./dashboard"), {
   loading: () => <Spinner />,
 });
 const Reports = dynamic(() => import("./reports"), {
@@ -70,6 +77,7 @@ export default function CRMApp() {
       () => "reminders" as Page,
     );
   const [range, setRange] = useState("30"),
+    [initialWorkFilter, setInitialWorkFilter] = useState<WorkFilter>("all"),
     [listCare, setListCare] = useState(""),
     [selected, setSelected] = useState<Set<string>>(new Set()),
     [openId, setOpenId] = useState<string | null>(null),
@@ -97,6 +105,7 @@ export default function CRMApp() {
     window.location.hash = next;
     setSelected(new Set());
     setListCare("");
+    setInitialWorkFilter("all");
     setMore(false);
   }
   function select(ids: string[], checked: boolean) {
@@ -483,15 +492,32 @@ export default function CRMApp() {
               )}
               {page === "today" && (
                 <TodayWorkspace
+                  initialFilter={initialWorkFilter}
                   today={today}
                   onOpen={setOpenId}
                   onZalo={openZalo}
                   overlayOpen={!!openId || !!zaloId}
                 />
               )}
-              {(page === "dashboard" || page === "reports") && (
+              {page === "dashboard" && (
+                <Dashboard
+                  today={today}
+                  onOpen={setOpenId}
+                  onOverdue={() => {
+                    navigate("today");
+                    setInitialWorkFilter("overdue");
+                  }}
+                  onReminders={(nextRange, care) => {
+                    navigate("reminders");
+                    setRange(nextRange);
+                    setListCare(care || "");
+                  }}
+                  onToday={() => navigate("today")}
+                  onReports={() => navigate("reports")}
+                />
+              )}
+              {page === "reports" && (
                 <Reports
-                  dashboard={page === "dashboard"}
                   onNavigate={(p, r) => {
                     if (r) setRange(r);
                     navigate(p);

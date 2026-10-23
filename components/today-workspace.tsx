@@ -67,14 +67,16 @@ export default function TodayWorkspace({
   onOpen,
   onZalo,
   overlayOpen,
+  initialFilter = "all",
 }: {
   today: string;
   onOpen: (id: string) => void;
   onZalo: (customer: Customer) => void;
   overlayOpen: boolean;
+  initialFilter?: WorkFilter;
 }) {
   const crm = useCRM();
-  const [filter, setFilter] = useState<WorkFilter>("all");
+  const [filter, setFilter] = useState<WorkFilter>(initialFilter);
   const [currentId, setCurrentId] = useState("");
   const [scheduleId, setScheduleId] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});

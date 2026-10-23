@@ -48,3 +48,12 @@ Kiểm thử dùng dữ liệu tổng hợp, không ghi Firebase thật. Chưa x
 - Lint, TypeScript, production build qua. Đã xem ảnh desktop, mobile và form hẹn tại `test-results/today-final-*.png`.
 
 Các kiểm tra ghi dữ liệu dùng adapter cục bộ với dữ liệu tổng hợp. Chưa thử lỗi ghi mạng/quyền và đồng bộ trên Firebase production hoặc bàn phím ảo thiết bị thật. Chưa phát hành.
+
+## Dashboard — 23/10/2026
+
+- 19 unit tests bao gồm 5 kiểm tra Dashboard: nhóm KPI/ước tính; lịch hôm nay +6 ngày; ranh giới qua năm và năm nhuận; khách duy nhất và múi giờ Việt Nam; dữ liệu trống. Ngày lỗi, timestamp thiếu múi giờ, sự kiện sao chép/đặt lịch, giao dịch hiện tại và sự kiện ngoài kỳ được loại đúng.
+- 18 browser tests bao gồm 5 luồng mới trong `tests/dashboard.spec.ts`: bốn đích KPI; chọn ngày và giữ lựa chọn khi đóng hồ sơ; chọn tháng bằng bàn phím, cột 0 và phân trang; kết quả 7/30/90 ngày và hai nhóm; mobile mở Báo cáo chi tiết.
+- Các phép tính và dữ liệu kiểm thử dùng lịch Việt Nam. Các kiểm tra nghiệp vụ, giao diện, nhập/xuất và công việc hôm nay trước đó được giữ lại. Bố cục kiểm tra ở 360/768/1024/1440px.
+- Lint, TypeScript, production build và định dạng mã được kiểm tra. Ảnh desktop/mobile và phần biểu đồ được xem trong `test-results/`.
+
+Dashboard chỉ đọc dữ liệu và mở các luồng có sẵn. Kiểm tra dùng dữ liệu tổng hợp, không ghi Firebase thật. Chưa phát hành và chưa xác minh số liệu trên tài khoản production.
