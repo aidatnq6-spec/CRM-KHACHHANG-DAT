@@ -13,16 +13,26 @@ import {
 import {
   careLabels,
   careOf,
-  daysLeft,
   fmtDate,
   matchesSearch,
   pkgLabel,
   phoneDigits,
-  statusOf,
   todayVN,
+  matchingDeadlines,
+  deadlineStatus,
+  type DeadlineRange,
 } from "@/lib/domain";
 import type { Customer } from "@/lib/types";
-import { CareBadge, Empty, ExpiryBadge } from "./ui";
+import { CareBadge, Empty } from "./ui";
+import {
+  hasSignature,
+  isServiceId,
+  serviceCatalog,
+  serviceLabel,
+  servicesOf,
+} from "@/lib/services";
+import CustomerServices from "./customer-services";
+import ServiceDeadlines from "./service-deadlines";
 export default function CustomerList({
   rows,
   onOpen,
@@ -33,6 +43,8 @@ export default function CustomerList({
   care,
   onCareChange,
   sortLabel,
+  deadlineRange,
+  initialService = "",
 }: {
   rows: Customer[];
   onOpen: (id: string) => void;
@@ -43,8 +55,11 @@ export default function CustomerList({
   care: string;
   onCareChange: (value: string) => void;
   sortLabel: string;
+  deadlineRange?: DeadlineRange;
+  initialService?: string;
 }) {
   const [query, setQuery] = useState(""),
+    [service, setService] = useState(initialService),
     [pkg, setPkg] = useState(""),
     [status, setStatus] = useState(""),
     [page, setPage] = useState(1),
@@ -66,10 +81,32 @@ export default function CustomerList({
       matchesSearch(k, query) &&
       (!care || careOf(k) === care) &&
       (!pkg || pkgLabel(k.pkg) === pkg) &&
-      (!status || statusOf(k) === status) &&
-      (!expiresToday || daysLeft(k.expireDate, today) === 0) &&
+      (!status ||
+        deadlineStatus(
+          k,
+          today,
+          isServiceId(service) ? service : undefined,
+          deadlineRange,
+        ) === status) &&
+      (!service ||
+        (service === "unclassified"
+          ? servicesOf(k).length === 0
+          : isServiceId(service) && servicesOf(k).includes(service))) &&
+      (deadlineRange === undefined ||
+        matchingDeadlines(k, today, deadlineRange, service || undefined)
+          .length > 0) &&
+      (!expiresToday ||
+        matchingDeadlines(k, today, 0, service || undefined).length > 0) &&
       (!appointments || !!(k.followUpDate && k.followUpDate <= today)),
   );
+  if (deadlineRange !== undefined)
+    filtered.sort(
+      (a, b) =>
+        matchingDeadlines(a, today, deadlineRange, service || undefined)[0]
+          .days -
+          matchingDeadlines(b, today, deadlineRange, service || undefined)[0]
+            .days || a.name.localeCompare(b.name, "vi"),
+    );
   const pages = Math.max(1, Math.ceil(filtered.length / 15)),
     current = Math.min(page, pages),
     shown = filtered.slice((current - 1) * 15, current * 15);
@@ -79,6 +116,7 @@ export default function CustomerList({
     pkg ||
     status ||
     query ||
+    service ||
     expiresToday ||
     appointments
   );
@@ -87,6 +125,7 @@ export default function CustomerList({
     setCare("");
     setPkg("");
     setStatus("");
+    setService("");
     setExpiresToday(false);
     setAppointments(false);
     clearSelection();
@@ -125,9 +164,31 @@ export default function CustomerList({
           aria-expanded={filters}
         >
           <SlidersHorizontal size={17} />
-          Bộ lọc{(care || pkg || status) && <span className="filter-dot" />}
+          Bộ lọc
+          {(care || pkg || status || service) && (
+            <span className="filter-dot" />
+          )}
         </button>
         <div className={`list-filters ${filters ? "open" : ""}`}>
+          <label className="sr-only" htmlFor="filter-service">
+            Dịch vụ
+          </label>
+          <select
+            id="filter-service"
+            value={service}
+            onChange={(event) => {
+              setService(event.target.value);
+              clearSelection();
+            }}
+          >
+            <option value="">Tất cả dịch vụ</option>
+            {serviceCatalog.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.label}
+              </option>
+            ))}
+            <option value="unclassified">Chưa phân loại</option>
+          </select>
           <label className="sr-only" htmlFor="filter-care">
             Trạng thái chăm sóc
           </label>
@@ -222,6 +283,12 @@ export default function CustomerList({
               clear: () => setCare(""),
             },
             pkg && { label: pkg, clear: () => setPkg("") },
+            service && {
+              label: isServiceId(service)
+                ? serviceLabel(service)
+                : "Chưa phân loại",
+              clear: () => setService(""),
+            },
             status && {
               label: {
                 active: "Còn hạn",
@@ -305,7 +372,7 @@ export default function CustomerList({
                   </th>
                   <th>Khách hàng</th>
                   <th>Liên hệ</th>
-                  <th>Ngày hết hạn</th>
+                  <th>Hạn dịch vụ</th>
                   <th>Chăm sóc</th>
                   <th className="right">Thao tác</th>
                 </tr>
@@ -314,7 +381,11 @@ export default function CustomerList({
                 {shown.map((k) => (
                   <tr
                     key={k.id}
-                    data-urgency={urgencyOf(k)}
+                    data-urgency={urgencyOf(
+                      k,
+                      deadlineRange,
+                      service || undefined,
+                    )}
                     className={selected.has(k.id) ? "selected" : ""}
                   >
                     <td className="check-cell">
@@ -338,8 +409,15 @@ export default function CustomerList({
                             {k.name || "Chưa có tên"}
                           </button>
                           <small>
-                            {k.customId || "Chưa có mã"} · {pkgLabel(k.pkg)}
+                            {k.customId || "Chưa có mã"}
+                            {hasSignature(k) ? ` · ${pkgLabel(k.pkg)}` : ""}
                           </small>
+                          <CustomerServices
+                            customer={k}
+                            compact
+                            selectedService={service}
+                            onShow={() => onOpen(k.id)}
+                          />
                           {k.bizName && k.bizName !== k.name && (
                             <small>{k.bizName}</small>
                           )}
@@ -351,10 +429,11 @@ export default function CustomerList({
                       <small>{k.phone || "Chưa có liên hệ"}</small>
                     </td>
                     <td>
-                      <span className="date-text">{fmtDate(k.expireDate)}</span>
-                      <div>
-                        <ExpiryBadge customer={k} />
-                      </div>
+                      <ServiceDeadlines
+                        customer={k}
+                        service={service || undefined}
+                        range={deadlineRange}
+                      />
                     </td>
                     <td>
                       <CareBadge customer={k} />
@@ -399,7 +478,7 @@ export default function CustomerList({
               <article
                 className={`customer-card ${selected.has(k.id) ? "selected" : ""}`}
                 key={k.id}
-                data-urgency={urgencyOf(k)}
+                data-urgency={urgencyOf(k, deadlineRange, service || undefined)}
               >
                 <div className="card-heading">
                   <input
@@ -417,13 +496,21 @@ export default function CustomerList({
                   <ArrowUpRight size={17} />
                 </div>
                 <div className="card-subtitle">
-                  {k.customId || "Chưa có mã"} · {pkgLabel(k.pkg)}
+                  {k.customId || "Chưa có mã"}
+                  {hasSignature(k) ? ` · ${pkgLabel(k.pkg)}` : ""}
                 </div>
+                <CustomerServices
+                  customer={k}
+                  compact
+                  selectedService={service}
+                  onShow={() => onOpen(k.id)}
+                />
                 <div className="card-dates">
-                  <span>
-                    Hết hạn <strong>{fmtDate(k.expireDate)}</strong>
-                  </span>
-                  <ExpiryBadge customer={k} />
+                  <ServiceDeadlines
+                    customer={k}
+                    service={service || undefined}
+                    range={deadlineRange}
+                  />
                 </div>
                 <CareBadge customer={k} />
                 {k.followUpDate && <small>Hẹn {fmtDate(k.followUpDate)}</small>}
@@ -486,9 +573,14 @@ export default function CustomerList({
   );
 }
 
-function urgencyOf(customer: Customer) {
+function urgencyOf(
+  customer: Customer,
+  range?: DeadlineRange,
+  service?: string,
+) {
   if (customer.status === "inactive") return "quiet";
-  const days = daysLeft(customer.expireDate);
+  const days =
+    matchingDeadlines(customer, undefined, range, service)[0]?.days ?? null;
   return days === null
     ? "unknown"
     : days < 0

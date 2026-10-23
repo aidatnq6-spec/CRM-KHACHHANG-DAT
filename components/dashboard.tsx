@@ -102,7 +102,7 @@ export default function Dashboard({
       <p className="dashboard-estimate">
         Giá trị dự kiến tính theo giá gói hiện tại, không phải tiền đã thu.
         {data.missingPrice > 0 &&
-          ` Có ${data.missingPrice} khách thiếu giá; tạm tính bằng giá trung bình trên toàn bộ khách.`}
+          ` Có ${data.missingPrice} khách thiếu giá; tạm tính bằng giá trung bình của khách dùng chữ ký số.`}
       </p>
       {!rows.length && (
         <Empty

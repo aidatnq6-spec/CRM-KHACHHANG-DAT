@@ -31,7 +31,7 @@ export default function Login() {
             <ShieldCheck />
           </span>
           <div>
-            CRM CKS<small>Chăm sóc & gia hạn</small>
+            CRM - Đạt<small>Quản lý & chăm sóc khách hàng</small>
           </div>
         </div>
         <div className="login-message">

@@ -9,6 +9,7 @@ import {
 } from "./domain";
 import { matchesWorkFilter, workQueue } from "./work-queue";
 import type { Customer } from "./types";
+import { hasSignature } from "./services";
 
 const openCustomer = (customer: Customer) =>
   customer.status !== "inactive" &&
@@ -48,6 +49,7 @@ export function dashboardData(rows: Customer[], today = todayVN()) {
     const customers = rows
       .filter(
         (customer) =>
+          hasSignature(customer) &&
           customer.status !== "inactive" &&
           (daysLeft(customer.expireDate, today) ?? -1) >= 0 &&
           normalizeDate(customer.expireDate).slice(0, 7) === key,

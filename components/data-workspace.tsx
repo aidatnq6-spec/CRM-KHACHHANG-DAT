@@ -29,6 +29,7 @@ import {
 import type { WriteOperation } from "@/lib/repository";
 import { readableError, useCRM } from "./crm-provider";
 import { Empty, Modal } from "./ui";
+import { additionalDatedServices, servicesText } from "@/lib/services";
 export default function DataWorkspace({
   onOpen,
 }: {
@@ -86,7 +87,9 @@ export default function DataWorkspace({
         const XLSX = await import("xlsx");
         const wb = XLSX.read(await file.arrayBuffer(), {
           type: "array",
-          cellDates: true,
+          // Keep spreadsheet serial dates and CSV text independent of browser timezone.
+          cellDates: false,
+          raw: true,
           codepage: 65001,
         });
         const parsed = parseGrid(
@@ -95,6 +98,7 @@ export default function DataWorkspace({
             defval: "",
             blankrows: false,
           }),
+          !!wb.Workbook?.WBProps?.date1904,
         );
         setWorkbook(wb);
         setSheet(wb.SheetNames[0]);
@@ -115,6 +119,7 @@ export default function DataWorkspace({
               defval: "",
               blankrows: false,
             }),
+            !!workbook.Workbook?.WBProps?.date1904,
           ),
         );
       }
@@ -134,7 +139,10 @@ export default function DataWorkspace({
           </span>
           <h3>Nhập & xuất Excel</h3>
           <p>
-            Đọc file hiện có, kiểm tra dữ liệu và khách trùng trước khi lưu.
+            Đọc file hiện có, kiểm tra dữ liệu và khách trùng trước khi lưu. Cột
+            “Dịch vụ” có thể chứa nhiều tên, ngăn cách bằng dấu chấm phẩy. BHXH,
+            hóa đơn điện tử, khấu trừ thuế TNCN và căn hộ có cột ngày bắt
+            đầu/hết hạn riêng trong file mẫu.
           </p>
           <div className="tool-actions">
             <label
@@ -345,6 +353,11 @@ export default function DataWorkspace({
             <span>{plan.skipped} bỏ qua/lỗi</span>
             <span>{plan.suspected} nghi trùng tên</span>
           </div>
+          {plan.periodErrors.length > 0 && (
+            <div className="alert error" role="alert">
+              {plan.periodErrors.join(" ")}
+            </div>
+          )}
           <p className="muted">
             Chỉ nhập dòng hợp lệ. Khách nghi trùng tên được giữ riêng; kiểm tra
             kỹ trước khi xác nhận. Cập nhật chỉ thay các trường có trong file.
@@ -356,8 +369,10 @@ export default function DataWorkspace({
                   <th>Dòng</th>
                   <th>Tên khách</th>
                   <th>Điện thoại</th>
+                  <th>Dịch vụ</th>
                   <th>Gói</th>
                   <th>Hết hạn</th>
+                  <th>Kỳ hạn dịch vụ bổ sung</th>
                   <th>Kiểm tra</th>
                 </tr>
               </thead>
@@ -367,8 +382,33 @@ export default function DataWorkspace({
                     <td>{r.row}</td>
                     <td>{String(r.data.name)}</td>
                     <td>{String(r.data.phone || "")}</td>
+                    <td>
+                      {r.data.services === undefined
+                        ? "Giữ nguyên / mặc định Chữ ký số"
+                        : Array.isArray(r.data.services)
+                          ? servicesText(r.data)
+                          : String(r.data.services)}
+                    </td>
                     <td>{pkgLabel(r.data.pkg)}</td>
                     <td>{fmtDate(r.data.expireDate)}</td>
+                    <td>
+                      {additionalDatedServices
+                        .filter(
+                          (service) => r.data.servicePeriods?.[service.id],
+                        )
+                        .map((service) => (
+                          <div key={service.id}>
+                            {service.label}:{" "}
+                            {fmtDate(
+                              r.data.servicePeriods?.[service.id]?.startDate,
+                            )}{" "}
+                            →{" "}
+                            {fmtDate(
+                              r.data.servicePeriods?.[service.id]?.endDate,
+                            )}
+                          </div>
+                        ))}
+                    </td>
                     <td className={r.errors.length ? "danger-text" : "muted"}>
                       {r.errors.join("; ") ||
                         (duplicateOf(r.data, crm.rows)

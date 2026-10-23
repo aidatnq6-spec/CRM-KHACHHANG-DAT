@@ -63,3 +63,19 @@ Chạy các luồng hiện có với dữ liệu tổng hợp, kiểm tra ảnh 
 - Biểu đồ 6 tháng tính từ hôm nay đến hết tháng thứ sáu, kể cả phần còn lại của tháng hiện tại. Chỉ tính ngày hợp lệ, chưa qua hạn và khách đang hoạt động. Mỗi cột có số, nhãn tháng, trạng thái chọn và thao tác bàn phím; cột 0 có chiều cao 0. Bấm tháng mở danh sách tương ứng, có phân trang.
 - Kết quả chăm sóc có kỳ 7/30/90 ngày, bao gồm hôm nay, dùng lịch Việt Nam cho dấu thời gian. Đếm khách duy nhất có nhật ký chăm sóc thực tế; loại sao chép/script và chỉ đặt lịch. Gia hạn đếm khách có giao dịch lịch sử không phải bản ghi hiện tại hoặc xác nhận gia hạn trong kỳ. Hai nhóm độc lập, không trình bày thành tỷ lệ chuyển đổi hay tiền đã thu.
 - Có trạng thái trống cho ngày, tháng, kết quả và tài khoản chưa có dữ liệu. Mobile ưu tiên chỉ số và khách cần xử lý, các biểu đồ nằm sau.
+
+## Nhiều dịch vụ trên một khách hàng
+
+- Form dùng nhóm checkbox có nhãn đầy đủ cho 9 dịch vụ, yêu cầu chọn ít nhất một. Hai cột ở màn hình rộng, một cột trên điện thoại. Thông tin CKS chỉ hiện khi chọn Chữ ký số; bỏ chọn không xóa dữ liệu đã lưu.
+- Danh sách hiện tối đa hai nhãn và nút “+N dịch vụ” mở hồ sơ đầy đủ. Khi lọc, dịch vụ được chọn luôn hiện trước. Nhãn dài xuống dòng theo từ; nút Zalo giữ trên một dòng.
+- Bộ lọc dịch vụ kết hợp với các điều kiện hiện có, có nhãn điều kiện đang dùng và xóa riêng/xóa hết. Khách chưa có trường dịch vụ mặc định Chữ ký số; danh sách trống rõ ràng được xem là Chưa phân loại.
+- Nhắc hạn tính kỳ hạn của 5 dịch vụ có ngày. Biểu đồ CKS, phân bổ gói và giá trung bình hiện tại giữ phạm vi Chữ ký số. Lịch hẹn, chăm sóc và tổng khách áp dụng cho mọi dịch vụ; lịch sử giao dịch cũ được giữ nguyên.
+- Nhập/xuất Excel dùng tên dịch vụ ngăn bằng dấu chấm phẩy, có xem trước và báo tên không nhận diện. Cột thiếu/trống không ghi đè phân loại khi cập nhật. JSON giữ các mã dịch vụ và từ chối mã không hợp lệ trước khi ghi.
+
+## Kỳ hạn từng dịch vụ
+
+- BHXH, Hóa đơn điện tử, Phần mềm Khấu trừ thuế TNCN và Căn hộ cho thuê có nhóm ngày bắt đầu/hết hạn riêng khi được chọn. Mỗi trường có nhãn truy cập đầy đủ tên dịch vụ, lỗi cạnh trường và focus khi ngày không hợp lệ. Ngày chưa biết có thể để trống, giống CKS; hệ thống kiểm tra dữ liệu chỉ rõ dịch vụ thiếu ngày hết hạn.
+- Hồ sơ hiện từng dịch vụ, cặp ngày và nhãn còn hạn/hết hạn. Bỏ chọn giữ dữ liệu đã lưu, đồng thời dừng nhắc kỳ hạn đó; chọn lại khôi phục giá trị.
+- Nhắc hạn lọc theo đúng cặp dịch vụ/khoảng ngày; một khách có nhiều hạn chỉ xuất hiện một lần với các hạn phù hợp. Khi đổi dịch vụ, thứ tự được tính lại theo kỳ hạn dịch vụ đã chọn. Không dùng hạn CKS thay cho hạn BHXH hay ngược lại.
+- Công việc hôm nay gộp các lý do có tên dịch vụ và ngày hết hạn; vẫn ưu tiên quá hẹn và tạm hoãn khi khách có lịch liên hệ tương lai. Ghi nhận chăm sóc một lần cho khách. Phạm vi này chưa tách trạng thái chăm sóc hay lịch sử giao dịch riêng theo dịch vụ.
+- Excel thêm 8 cột ngày, xem trước từng kỳ hạn và gộp cập nhật từng trường để giữ dịch vụ khác. CSV đọc dạng văn bản để tránh lệch ngày theo múi giờ và mất số 0 đầu; Excel hỗ trợ hai hệ ngày 1900/1904. JSON kiểm tra cấu trúc/ngày/khoảng ngày. Zalo tự động dùng nội dung có tên dịch vụ khi kỳ hạn ưu tiên thuộc dịch vụ bổ sung; mẫu được chọn thủ công vẫn theo lựa chọn người dùng.

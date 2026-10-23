@@ -22,7 +22,12 @@ import {
   X,
   ChartNoAxesCombined,
 } from "lucide-react";
-import { careOf, daysLeft, expiring, fmtDate, todayVN } from "@/lib/domain";
+import {
+  careOf,
+  serviceReminderCustomers,
+  fmtDate,
+  todayVN,
+} from "@/lib/domain";
 import {
   matchesWorkFilter,
   workQueue,
@@ -79,6 +84,7 @@ export default function CRMApp() {
   const [range, setRange] = useState("30"),
     [initialWorkFilter, setInitialWorkFilter] = useState<WorkFilter>("all"),
     [listCare, setListCare] = useState(""),
+    [initialService, setInitialService] = useState(""),
     [selected, setSelected] = useState<Set<string>>(new Set()),
     [openId, setOpenId] = useState<string | null>(null),
     [adding, setAdding] = useState(false),
@@ -105,6 +111,7 @@ export default function CRMApp() {
     window.location.hash = next;
     setSelected(new Set());
     setListCare("");
+    setInitialService("");
     setInitialWorkFilter("all");
     setMore(false);
   }
@@ -119,14 +126,11 @@ export default function CRMApp() {
   const customer = crm.rows.find((k) => k.id === openId),
     zaloCustomer = crm.rows.find((k) => k.id === zaloId);
   const soon30 = useMemo(
-      () => expiring(crm.rows, 30, today),
+      () => serviceReminderCustomers(crm.rows, 30, today),
       [crm.rows, today],
     ),
-    soon7 = expiring(crm.rows, 7, today),
-    expired = crm.rows.filter(
-      (k) =>
-        k.status !== "inactive" && (daysLeft(k.expireDate, today) ?? 0) < 0,
-    );
+    soon7 = serviceReminderCustomers(crm.rows, 7, today),
+    expired = serviceReminderCustomers(crm.rows, "expired", today);
   const tasks = useMemo(
     () =>
       workQueue(crm.rows, today).filter((item) =>
@@ -136,13 +140,11 @@ export default function CRMApp() {
   );
   const listed =
     page === "reminders"
-      ? range === "expired"
-        ? [...expired].sort(
-            (a, b) =>
-              (daysLeft(a.expireDate, today) || 0) -
-              (daysLeft(b.expireDate, today) || 0),
-          )
-        : expiring(crm.rows, Number(range), today)
+      ? serviceReminderCustomers(
+          crm.rows,
+          range === "expired" ? "expired" : Number(range),
+          today,
+        )
       : [...crm.rows].sort((a, b) => a.name.localeCompare(b.name, "vi"));
   function openZalo(k: Customer) {
     setReturnId(openId);
@@ -225,7 +227,7 @@ export default function CRMApp() {
             <ShieldCheck size={24} />
           </span>
           <span>
-            CRM CKS<small>Chăm sóc & gia hạn</small>
+            CRM - Đạt<small>Quản lý & chăm sóc khách hàng</small>
           </span>
         </button>
         <div className="workspace-label">
@@ -290,7 +292,7 @@ export default function CRMApp() {
             onClick={() => navigate("reminders")}
           >
             <ShieldCheck size={23} />
-            CRM CKS
+            CRM - Đạt
           </button>
           <div className="header-actions">
             <span className="sync-label">
@@ -473,7 +475,15 @@ export default function CRMApp() {
                     }}
                   />
                   <CustomerList
-                    key={page + range}
+                    key={page + range + initialService}
+                    initialService={initialService}
+                    deadlineRange={
+                      page === "reminders"
+                        ? range === "expired"
+                          ? "expired"
+                          : Number(range)
+                        : undefined
+                    }
                     rows={listed}
                     onOpen={setOpenId}
                     selected={selected}
@@ -510,6 +520,7 @@ export default function CRMApp() {
                   onReminders={(nextRange, care) => {
                     navigate("reminders");
                     setRange(nextRange);
+                    setInitialService("digital_signature");
                     setListCare(care || "");
                   }}
                   onToday={() => navigate("today")}
@@ -538,7 +549,7 @@ export default function CRMApp() {
             </>
           )}
           <footer className="main-footer no-print">
-            <span>CRM CKS · Chăm sóc để kết nối dài lâu</span>
+            <span>CRM - Đạt · Chăm sóc để kết nối dài lâu</span>
             <span>
               <ShieldCheck size={13} />
               Dữ liệu theo tài khoản

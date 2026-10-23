@@ -1,5 +1,21 @@
 export type CareStatus =
   "not_contacted" | "zalo_sent" | "called" | "waiting" | "renewed" | "declined";
+export type ServiceId =
+  | "digital_signature"
+  | "social_insurance"
+  | "e_invoice"
+  | "pit_withholding"
+  | "apartment_rental"
+  | "ai_training"
+  | "financial_training"
+  | "investment_brokerage"
+  | "other";
+export type AdditionalDatedServiceId =
+  "social_insurance" | "e_invoice" | "pit_withholding" | "apartment_rental";
+export interface ServicePeriod {
+  startDate?: string;
+  endDate?: string;
+}
 export interface HistoryEntry {
   date?: string;
   pkg?: string | number;
@@ -25,6 +41,8 @@ export interface Customer {
   bizName?: string;
   address?: string;
   phone?: string;
+  services?: ServiceId[];
+  servicePeriods?: Partial<Record<AdditionalDatedServiceId, ServicePeriod>>;
   pkg?: string | number;
   price?: number;
   issueDate?: string;

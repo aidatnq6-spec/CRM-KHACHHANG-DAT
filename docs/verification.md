@@ -57,3 +57,22 @@ Các kiểm tra ghi dữ liệu dùng adapter cục bộ với dữ liệu tổn
 - Lint, TypeScript, production build và định dạng mã được kiểm tra. Ảnh desktop/mobile và phần biểu đồ được xem trong `test-results/`.
 
 Dashboard chỉ đọc dữ liệu và mở các luồng có sẵn. Kiểm tra dùng dữ liệu tổng hợp, không ghi Firebase thật. Chưa phát hành và chưa xác minh số liệu trên tài khoản production.
+
+## Nhiều dịch vụ — 23/10/2026
+
+- 24/24 unit tests qua: mặc định khách cũ, đủ 9 dịch vụ, chuẩn hóa tên/mã, loại khách không dùng CKS khỏi kỳ hạn, giữ lịch hẹn và dữ liệu CKS cũ; Excel/JSON round-trip, cột trống giữ phân loại và từ chối dịch vụ không hợp lệ.
+- 23/23 browser tests qua, gồm 5 luồng mới: chọn/lưu đủ 9 dịch vụ và mở toàn bộ nhãn; tạo khách chỉ dùng dịch vụ khác; kết hợp/xóa bộ lọc; bỏ/chọn lại CKS giữ giá/ngày và cập nhật nhắc hạn; xác thực form trên mobile; xem trước/nhập/xuất Excel có nhiều dịch vụ.
+- Các luồng Dashboard, Công việc hôm nay, CRM, Zalo và bố cục 7 màn hình ở 360/768/1024/1440px tiếp tục qua. Kiểm tra dịch vụ trên mobile 360px không tràn ngang.
+- Lint, TypeScript và production build qua. Ảnh form, hồ sơ và danh sách ở desktop/mobile nằm trong `test-results/services-*.png`.
+
+Kiểm tra dùng dữ liệu tổng hợp cục bộ, không ghi Firebase thật. Phạm vi dịch vụ bổ sung là phân loại, hiển thị và lọc; giá/ngày/lịch sử riêng theo từng dịch vụ chưa được bổ sung. Chưa phát hành.
+
+## Kỳ hạn nhiều dịch vụ — 23/10/2026
+
+- Bổ sung ngày bắt đầu/hết hạn cho BHXH, Hóa đơn điện tử, Phần mềm Khấu trừ thuế TNCN và Căn hộ cho thuê. Thông tin CKS cũ giữ nguyên; ngày từng dịch vụ được lưu riêng và giữ khi bỏ/chọn lại.
+- 30/30 unit tests qua, gồm 6 kiểm tra mới về mốc 0/7/30/90 ngày, nhiều kỳ hạn và khách duy nhất, inactive/dịch vụ bỏ chọn/ngày sai, lịch hẹn tương lai, Excel/JSON và cập nhật một phần, nội dung Zalo đúng dịch vụ, ngày serial theo hệ 1900/1904.
+- 28/28 browser tests qua. Bốn luồng mới kiểm tra lưu/mở lại đủ 4 dịch vụ, lọc đúng dịch vụ và khoảng ngày, focus lỗi ngày và bảo toàn kỳ hạn, gộp lý do và chăm sóc trên mobile, xem trước/nhập/xuất đủ 8 cột ngày. Kiểm tra CSV xác nhận ngày không lệch theo múi giờ và số điện thoại giữ số 0 đầu.
+- Các luồng Dashboard, hôm nay, Zalo, nhập/xuất và kiểm tra hydration trước đó tiếp tục qua. Bố cục 7 màn hình ở 360/768/1024/1440px qua; đã xem ảnh form, hồ sơ, nhắc hạn và công việc có nhiều dịch vụ ở desktop/mobile.
+- Lint, TypeScript qua production build và định dạng mã được kiểm tra. Nhắc hạn tính các dịch vụ có ngày, còn biểu đồ/giá trị CKS và giao dịch gia hạn giữ phạm vi chữ ký số; trạng thái chăm sóc và lịch hẹn vẫn theo khách.
+
+Kiểm tra dùng adapter cục bộ với dữ liệu tổng hợp, không ghi Firebase thật. Chưa kiểm tra đồng bộ/quyền ghi trên tài khoản production và chưa phát hành.

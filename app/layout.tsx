@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 export const metadata: Metadata = {
-  title: "CRM CKS · Chăm sóc & gia hạn",
-  description: "Quản lý khách hàng, chăm sóc và gia hạn chữ ký số.",
+  title: "CRM - Đạt · Quản lý & chăm sóc khách hàng",
+  description: "Quản lý khách hàng, dịch vụ, chăm sóc và lịch hẹn.",
 };
 export const viewport: Viewport = {
   width: "device-width",
@@ -14,7 +14,8 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="vi">
-      <body>{children}</body>
+      {/* Browser extensions may add attributes such as cz-shortcut-listen before hydration. */}
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

@@ -232,11 +232,16 @@ export default function Reports({
             <section className="content-panel">
               <div className="panel-heading">
                 <div>
-                  <h3>Phân bổ gói dịch vụ</h3>
-                  <p>Số khách và giá trị dịch vụ hiện tại.</p>
+                  <h3>Phân bổ gói chữ ký số</h3>
+                  <p>Số khách và giá trị chữ ký số hiện tại.</p>
                 </div>
               </div>
               <div className="package-bars">
+                {!data.packages.length && (
+                  <p className="muted">
+                    Chưa có dịch vụ chữ ký số để thống kê.
+                  </p>
+                )}
                 {data.packages.map(([pkg, value]) => (
                   <div key={pkg}>
                     <div className="bar-label">
@@ -267,7 +272,7 @@ export default function Reports({
               {
                 label: "Giá trung bình / khách",
                 value: money(data.average),
-                detail: "Trên toàn bộ khách hàng",
+                detail: "Trên khách có dịch vụ chữ ký số",
               },
               {
                 label: "Giá trị dự kiến 30 ngày",

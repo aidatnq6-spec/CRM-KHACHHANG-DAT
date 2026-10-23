@@ -399,7 +399,7 @@ export default function TodayWorkspace({
                 {item.reasons.length > 0 && (
                   <ul className="work-reasons" aria-label="Lý do ưu tiên">
                     {item.reasons.map((reason) => (
-                      <li key={reason.type}>
+                      <li key={`${reason.type}-${reason.title}`}>
                         {reason.title}
                         {reason.type === "expired" ? ` · ${reason.detail}` : ""}
                       </li>

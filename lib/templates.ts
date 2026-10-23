@@ -1,6 +1,7 @@
 import defaults from "./legacy-templates.json";
 import meta from "./legacy-meta.json";
-import { daysLeft, fmtDate, money, pkgLabel } from "./domain";
+import { daysLeft, fmtDate, money, pkgLabel, serviceDeadlines } from "./domain";
+import { hasSignature, serviceLabel, servicesText } from "./services";
 import type { Customer, ZaloTemplate } from "./types";
 export const defaultTemplates: ZaloTemplate[] = defaults;
 export const templateKey = meta.templateKey;
@@ -53,6 +54,22 @@ export function buildScript(
   templates: ZaloTemplate[],
   forcedKey = "auto",
 ) {
+  const deadlines = serviceDeadlines(k);
+  if (
+    forcedKey === "auto" &&
+    (!hasSignature(k) ||
+      (deadlines[0] && deadlines[0].serviceId !== "digital_signature"))
+  ) {
+    const periods = deadlines.filter((period) => period.days <= 30);
+    const included = periods.length ? periods : deadlines.slice(0, 1);
+    const details = included
+      .map(
+        (period) =>
+          `${serviceLabel(period.serviceId)}: hết hạn ${fmtDate(period.endDate)}${period.days < 0 ? ` (quá ${-period.days} ngày)` : period.days === 0 ? " (hôm nay)" : ` (còn ${period.days} ngày)`}`,
+      )
+      .join("\n");
+    return `Chào ${k.contact || k.name || "anh/chị"},\n${details || `Em liên hệ về dịch vụ ${servicesText(k)}.`}\nAnh/chị cho em xin thời gian thuận tiện để trao đổi và hỗ trợ nhé.`;
+  }
   const template =
     templates.find(
       (t) => t.key === (forcedKey === "auto" ? templateFor(k) : forcedKey),

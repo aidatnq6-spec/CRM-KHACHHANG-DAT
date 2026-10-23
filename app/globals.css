@@ -472,6 +472,23 @@ legend {
   letter-spacing: -0.6px;
   text-align: left;
 }
+.service-deadlines {
+  display: grid;
+  gap: 10px;
+}
+.service-deadline {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+}
+.service-deadline small {
+  max-width: 220px;
+  line-height: 1.5;
+  white-space: normal;
+}
+.service-period-detail > .badge {
+  margin-top: 10px;
+}
 .brand small {
   display: block;
   color: #b3c5d6;
@@ -879,12 +896,14 @@ button.stat:hover {
   outline: none;
 }
 .list-filters {
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 9px;
   margin-left: auto;
 }
 .list-filters select {
+  min-width: 0;
   font-size: 12px;
   min-height: 44px;
   padding: 10px 12px;
@@ -1026,6 +1045,8 @@ tr[data-urgency="expired"] .check-cell:before {
 }
 .row-actions {
   display: flex;
+  width: max-content;
+  margin-left: auto;
   justify-content: flex-end;
   align-items: center;
   gap: 4px;
@@ -1036,6 +1057,8 @@ tr[data-urgency="expired"] .check-cell:before {
   height: 44px;
 }
 .zalo-button {
+  flex-shrink: 0;
+  white-space: nowrap;
   min-height: 38px;
   padding: 8px 11px;
   border-radius: 6px;
@@ -1756,6 +1779,99 @@ tr[data-urgency="expired"] .check-cell:before {
 }
 .work-card > .alert {
   margin-bottom: 14px;
+}
+
+/* Service membership is shared across forms, profiles and filtered lists. */
+.service-help {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.service-options {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 9px;
+}
+.service-options label {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 48px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 400;
+}
+.service-options label + label {
+  margin-top: 0;
+}
+.service-options input {
+  margin-top: 2px;
+}
+.service-options .selected {
+  border-color: #91bdac;
+  background: var(--green-light);
+  color: var(--green);
+}
+.service-options + .field-error {
+  display: block;
+  margin-top: 9px;
+}
+.customer-services {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+  max-width: 100%;
+}
+.service-chip {
+  display: inline-block;
+  max-width: 100%;
+  border: 1px solid #d8e5e1;
+  border-radius: 5px;
+  padding: 3px 7px;
+  color: var(--green);
+  background: #f3f9f6;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  white-space: normal;
+  overflow-wrap: normal;
+}
+.service-more {
+  color: var(--blue);
+  font-size: 12px;
+  padding: 5px 7px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  min-height: 32px;
+}
+.profile-services {
+  margin-top: 18px;
+}
+.profile-services h4 {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.customer-card > .customer-services {
+  margin-bottom: 14px;
+}
+@media (max-width: 500px) {
+  .service-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .service-options label {
+    font-size: 14px;
+  }
+  .service-more {
+    min-height: 44px;
+  }
 }
 
 /* Profiles use quieter sections; dialogs keep native focus and keyboard behavior. */

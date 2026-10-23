@@ -4,6 +4,12 @@ import type {
   CustomerPatch,
   HistoryEntry,
 } from "./types";
+import {
+  hasSignature,
+  selectedServicePeriods,
+  serviceLabel,
+  servicesText,
+} from "./services";
 export const careLabels: Record<CareStatus, string> = {
   not_contacted: "Chưa liên hệ",
   zalo_sent: "Đã nhắn Zalo",
@@ -88,6 +94,7 @@ export const pkgLabel = (value: unknown) =>
   ] || String(value || "Chưa có gói");
 export function statusOf(k: Customer, today = todayVN()) {
   if (k.status === "inactive") return "inactive";
+  if (!hasSignature(k)) return "unknown";
   const d = daysLeft(k.expireDate, today);
   return d === null
     ? "unknown"
@@ -101,7 +108,13 @@ export function expiring(rows: Customer[], within = 30, today = todayVN()) {
   return rows
     .filter((k) => {
       const d = daysLeft(k.expireDate, today);
-      return k.status !== "inactive" && d !== null && d >= 0 && d <= within;
+      return (
+        hasSignature(k) &&
+        k.status !== "inactive" &&
+        d !== null &&
+        d >= 0 &&
+        d <= within
+      );
     })
     .sort(
       (a, b) =>
@@ -132,6 +145,7 @@ export function matchesSearch(k: Customer, q: string) {
       k.contact,
       k.note,
       k.note2,
+      servicesText(k),
     ].join(" "),
   ).includes(normalizeText(q));
 }
@@ -194,6 +208,22 @@ export function duplicateOf(
 export function dataIssues(k: Customer) {
   const issues: string[] = [];
   if (!k.phone) issues.push("Thiếu liên hệ");
+  for (const period of selectedServicePeriods(k)) {
+    if (period.serviceId === "digital_signature") continue;
+    const label = serviceLabel(period.serviceId);
+    if (!period.endDate) issues.push(`${label}: Thiếu ngày hết hạn`);
+    else if (!normalizeDate(period.endDate))
+      issues.push(`${label}: Ngày hết hạn sai`);
+    if (period.startDate && !normalizeDate(period.startDate))
+      issues.push(`${label}: Ngày bắt đầu sai`);
+    if (
+      normalizeDate(period.startDate) &&
+      normalizeDate(period.endDate) &&
+      normalizeDate(period.endDate) < normalizeDate(period.startDate)
+    )
+      issues.push(`${label}: Hết hạn trước ngày bắt đầu`);
+  }
+  if (!hasSignature(k)) return issues;
   if (!k.expireDate) issues.push("Thiếu ngày hết hạn");
   else if (!normalizeDate(k.expireDate)) issues.push("Ngày hết hạn sai");
   if (k.issueDate && !normalizeDate(k.issueDate)) issues.push("Ngày cấp sai");
@@ -249,8 +279,7 @@ export function todayTasks(rows: Customer[], today = todayVN()) {
         priority: number;
         days: number;
       }[] = [];
-      const f = daysLeft(k.followUpDate, today),
-        d = daysLeft(k.expireDate, today);
+      const f = daysLeft(k.followUpDate, today);
       if (f !== null && f <= 0)
         tasks.push({
           customer: k,
@@ -260,24 +289,27 @@ export function todayTasks(rows: Customer[], today = todayVN()) {
           priority: 1,
           days: f,
         });
-      if (d !== null && d < 0)
+      for (const period of serviceDeadlines(k, today)) {
+        if (period.days > 7) continue;
+        const signature = period.serviceId === "digital_signature";
         tasks.push({
           customer: k,
-          type: "expired",
-          title: "CKS đã hết hạn",
-          detail: `Quá ${-d} ngày`,
-          priority: 2,
-          days: d,
+          type: period.days < 0 ? "expired" : "urgent",
+          title:
+            period.days < 0
+              ? signature
+                ? "CKS đã hết hạn"
+                : `${serviceLabel(period.serviceId)} đã hết hạn`
+              : signature
+                ? period.days === 0
+                  ? "Hết hạn hôm nay"
+                  : `Còn ${period.days} ngày`
+                : `${serviceLabel(period.serviceId)}: ${period.days === 0 ? "hết hạn hôm nay" : `còn ${period.days} ngày`}`,
+          detail: `${serviceLabel(period.serviceId)} · Hết hạn ${fmtDate(period.endDate)}`,
+          priority: period.days < 0 ? 2 : 3,
+          days: period.days,
         });
-      else if (d !== null && d <= 7)
-        tasks.push({
-          customer: k,
-          type: "urgent",
-          title: d === 0 ? "Hết hạn hôm nay" : `Còn ${d} ngày`,
-          detail: "Ưu tiên nhắc gia hạn",
-          priority: 3,
-          days: d,
-        });
+      }
       if (["waiting", "zalo_sent"].includes(careOf(k)))
         tasks.push({
           customer: k,
@@ -291,10 +323,75 @@ export function todayTasks(rows: Customer[], today = todayVN()) {
     })
     .sort((a, b) => a.priority - b.priority || a.days - b.days);
 }
+export type DeadlineRange = number | "expired";
+export function serviceDeadlines(customer: Customer, today = todayVN()) {
+  return selectedServicePeriods(customer)
+    .flatMap((period) => {
+      const endDate = normalizeDate(period.endDate);
+      const days = daysLeft(endDate, today);
+      return days === null ? [] : [{ ...period, endDate, days }];
+    })
+    .sort((a, b) => a.days - b.days);
+}
+export function matchingDeadlines(
+  customer: Customer,
+  today = todayVN(),
+  range?: DeadlineRange,
+  service?: string,
+) {
+  return serviceDeadlines(customer, today).filter(
+    (period) =>
+      (!service || period.serviceId === service) &&
+      (range === undefined ||
+        (range === "expired"
+          ? period.days < 0
+          : period.days >= 0 && period.days <= range)),
+  );
+}
+export function serviceReminderCustomers(
+  rows: Customer[],
+  range: DeadlineRange,
+  today = todayVN(),
+) {
+  return rows
+    .filter(
+      (customer) =>
+        customer.status !== "inactive" &&
+        matchingDeadlines(customer, today, range).length > 0,
+    )
+    .sort(
+      (a, b) =>
+        matchingDeadlines(a, today, range)[0].days -
+          matchingDeadlines(b, today, range)[0].days ||
+        a.name.localeCompare(b.name, "vi"),
+    );
+}
+export function deadlineStatus(
+  customer: Customer,
+  today = todayVN(),
+  service?: string,
+  range?: DeadlineRange,
+) {
+  if (customer.status === "inactive") return "inactive";
+  const period = matchingDeadlines(customer, today, range, service)[0];
+  return !period
+    ? "unknown"
+    : period.days < 0
+      ? "expired"
+      : period.days <= 30
+        ? "expiring"
+        : "active";
+}
 export function reportData(rows: Customer[], today = todayVN()) {
+  const signatureRows = rows.filter(hasSignature);
   const total = rows.length,
-    currentRevenue = rows.reduce((s, k) => s + Number(k.price || 0), 0),
-    average = total ? Math.round(currentRevenue / total) : 0;
+    currentRevenue = signatureRows.reduce(
+      (s, k) => s + Number(k.price || 0),
+      0,
+    ),
+    average = signatureRows.length
+      ? Math.round(currentRevenue / signatureRows.length)
+      : 0;
   const upcoming = expiring(rows, 30, today);
   const months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(today + "T00:00:00Z");
@@ -315,12 +412,15 @@ export function reportData(rows: Customer[], today = todayVN()) {
   const packages = new Map<string, { count: number; revenue: number }>();
   for (const k of rows) {
     const issuedMonth = monthMap.get(String(k.issueDate || "").slice(0, 7));
-    if (issuedMonth) issuedMonth.issuedValue += Number(k.price || 0);
+    if (issuedMonth && hasSignature(k))
+      issuedMonth.issuedValue += Number(k.price || 0);
     const p = pkgLabel(k.pkg),
       bucket = packages.get(p) || { count: 0, revenue: 0 };
-    bucket.count++;
-    bucket.revenue += Number(k.price || 0);
-    packages.set(p, bucket);
+    if (hasSignature(k)) {
+      bucket.count++;
+      bucket.revenue += Number(k.price || 0);
+      packages.set(p, bucket);
+    }
     for (const log of k.careLogs || []) {
       const m = monthMap.get(String(log.createdAt || "").slice(0, 7));
       if (!m) continue;

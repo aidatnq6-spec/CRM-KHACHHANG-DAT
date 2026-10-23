@@ -13,6 +13,12 @@ import {
   statusOf,
 } from "./domain";
 import type { Customer, CustomerPatch } from "./types";
+import {
+  additionalDatedServices,
+  isServiceId,
+  parseServices,
+  servicesText,
+} from "./services";
 import type { WriteOperation } from "./repository";
 export function download(
   name: string,
@@ -106,6 +112,43 @@ export function parseBackup(payload: unknown): WriteOperation[] {
       );
     ids.add(id);
     delete data.id;
+    if (
+      Object.hasOwn(data, "services") &&
+      (!Array.isArray(data.services) ||
+        data.services.some((service) => !isServiceId(service)))
+    )
+      throw new Error(`Dịch vụ ở bản ghi ${i + 1} không hợp lệ.`);
+    if (Object.hasOwn(data, "servicePeriods")) {
+      const raw = data.servicePeriods;
+      if (!raw || typeof raw !== "object" || Array.isArray(raw))
+        throw new Error(`Kỳ hạn dịch vụ ở bản ghi ${i + 1} không hợp lệ.`);
+      for (const [key, period] of Object.entries(raw)) {
+        if (
+          !additionalDatedServices.some((service) => service.id === key) ||
+          !period ||
+          typeof period !== "object" ||
+          Array.isArray(period)
+        )
+          throw new Error(`Kỳ hạn dịch vụ ở bản ghi ${i + 1} không hợp lệ.`);
+        const value = period as Record<string, unknown>;
+        for (const field of ["startDate", "endDate"])
+          if (
+            value[field] !== undefined &&
+            (typeof value[field] !== "string" ||
+              (value[field] !== "" &&
+                normalizeDate(value[field]) !== value[field]))
+          )
+            throw new Error(`Ngày dịch vụ ở bản ghi ${i + 1} không hợp lệ.`);
+        if (
+          value.startDate &&
+          value.endDate &&
+          String(value.startDate) > String(value.endDate)
+        )
+          throw new Error(
+            `Ngày hết hạn trước ngày bắt đầu ở bản ghi ${i + 1}.`,
+          );
+      }
+    }
     return { id, data: data as CustomerPatch, preserveTimestamps: true };
   });
 }
@@ -131,10 +174,30 @@ const columnMap: Record<string, string> = {
   "trang thai cham soc": "careStatus",
   "ngay hen": "followUpDate",
   "ghi chu lich hen": "followUpNote",
+  "dich vu": "services",
+  ...Object.fromEntries(
+    additionalDatedServices.flatMap((service) =>
+      (["startDate", "endDate"] as const).map((field) => [
+        normalizeText(
+          `${field === "startDate" ? "Ngày bắt đầu" : "Ngày hết hạn"} ${service.label}`,
+        ),
+        `period:${service.id}:${field}`,
+      ]),
+    ),
+  ),
 };
 const mappedField = (header: string) =>
   Object.hasOwn(columnMap, header) ? columnMap[header] : "";
-export function parseGrid(grid: unknown[][]): ImportRow[] {
+export function parseGrid(grid: unknown[][], date1904 = false): ImportRow[] {
+  const importDate = (raw: unknown) => {
+    const value =
+      typeof raw === "string" && /^\d+(?:\.\d+)?$/.test(raw.trim())
+        ? Number(raw)
+        : raw;
+    return normalizeDate(
+      typeof value === "number" && date1904 ? value + 1462 : value,
+    );
+  };
   const scored = grid.slice(0, 25).map((row, index) => ({
     index,
     score: row.filter((h) => mappedField(normalizeText(h))).length,
@@ -158,6 +221,34 @@ export function parseGrid(grid: unknown[][]): ImportRow[] {
         data[key] = typeof row[ci] === "string" ? row[ci].trim() : row[ci];
     });
     if (!data.name) data.name = data.customId || "";
+    const periods: NonNullable<Customer["servicePeriods"]> = {};
+    for (const service of additionalDatedServices) {
+      for (const field of ["startDate", "endDate"] as const) {
+        const key = `period:${service.id}:${field}`;
+        if (data[key] === undefined) continue;
+        const date = importDate(data[key]);
+        if (!date) errors.push(`Ngày không hợp lệ: ${service.label}`);
+        else periods[service.id] = { ...periods[service.id], [field]: date };
+        delete data[key];
+      }
+      const period = periods[service.id];
+      if (
+        period?.startDate &&
+        period.endDate &&
+        period.endDate < period.startDate
+      )
+        errors.push(`${service.label}: Hết hạn trước ngày bắt đầu`);
+    }
+    if (Object.keys(periods).length) data.servicePeriods = periods;
+    if (data.services !== undefined) {
+      try {
+        data.services = parseServices(data.services);
+      } catch (error) {
+        errors.push(
+          error instanceof Error ? error.message : "Dịch vụ không hợp lệ",
+        );
+      }
+    }
     if (!String(data.name).trim()) errors.push("Thiếu tên khách");
     if (!data.mst && data.mstHD) data.mst = data.mstHD;
     delete data.mstHD;
@@ -173,7 +264,7 @@ export function parseGrid(grid: unknown[][]): ImportRow[] {
     }
     for (const key of ["issueDate", "expireDate", "followUpDate"])
       if (data[key] != null) {
-        const date = normalizeDate(data[key]);
+        const date = importDate(data[key]);
         if (!date) errors.push(`Ngày không hợp lệ: ${key}`);
         else data[key] = date;
       }
@@ -221,6 +312,7 @@ export function planExcelImport(
 ) {
   const index = [...existing],
     map = new Map<string, WriteOperation>();
+  const periodErrors: string[] = [];
   let skipped = 0,
     updated = 0,
     added = 0,
@@ -240,16 +332,51 @@ export function planExcelImport(
       duplicate?.strength === "strong"
         ? duplicate.customer.id
         : createCustomerId();
+    const at = index.findIndex((k) => k.id === id);
+    const previous = map.get(id)?.data || {};
+    const data = { ...previous, ...row.data };
+    let invalidPeriod = false;
+    if (row.data.servicePeriods) {
+      data.servicePeriods = { ...(at >= 0 ? index[at].servicePeriods : {}) };
+      for (const service of additionalDatedServices) {
+        const patch = row.data.servicePeriods[service.id];
+        if (patch)
+          data.servicePeriods[service.id] = {
+            ...data.servicePeriods[service.id],
+            ...patch,
+          };
+        const period = data.servicePeriods[service.id];
+        if (
+          period?.startDate &&
+          period.endDate &&
+          period.endDate < period.startDate
+        ) {
+          invalidPeriod = true;
+          periodErrors.push(
+            `Dòng ${row.row}: ${service.label} hết hạn trước ngày bắt đầu đã lưu.`,
+          );
+        }
+      }
+    }
+    if (invalidPeriod) {
+      skipped++;
+      continue;
+    }
     if (duplicate?.strength === "strong") updated++;
     else added++;
-    const previous = map.get(id)?.data || {};
-    map.set(id, { id, data: { ...previous, ...row.data } });
-    const at = index.findIndex((k) => k.id === id);
-    const next = { ...(at >= 0 ? index[at] : {}), ...row.data, id } as Customer;
+    map.set(id, { id, data });
+    const next = { ...(at >= 0 ? index[at] : {}), ...data, id } as Customer;
     if (at >= 0) index[at] = next;
     else index.push(next);
   }
-  return { operations: [...map.values()], skipped, updated, added, suspected };
+  return {
+    operations: [...map.values()],
+    skipped,
+    updated,
+    added,
+    suspected,
+    periodErrors,
+  };
 }
 export const excelHeaders: Record<string, string> = {
   customId: "Mã ID",
@@ -269,20 +396,47 @@ export const excelHeaders: Record<string, string> = {
   careStatus: "Trạng thái chăm sóc",
   followUpDate: "Ngày hẹn",
   followUpNote: "Ghi chú lịch hẹn",
+  services: "Dịch vụ",
+  ...Object.fromEntries(
+    additionalDatedServices.flatMap((service) =>
+      (["startDate", "endDate"] as const).map((field) => [
+        `period:${service.id}:${field}`,
+        `${field === "startDate" ? "Ngày bắt đầu" : "Ngày hết hạn"} ${service.label}`,
+      ]),
+    ),
+  ),
 };
 export const excelSafe = (value: unknown) =>
   typeof value === "string" && /^[=+@\-\t\r]/.test(value)
     ? "'" + value
     : (value ?? "");
+export const customerExcelRow = (customer: Customer) =>
+  Object.keys(excelHeaders).map((key) =>
+    excelSafe(
+      key.startsWith("period:")
+        ? (() => {
+            const [, serviceId, field] = key.split(":");
+            const service = additionalDatedServices.find(
+              (item) => item.id === serviceId,
+            )!;
+            return (
+              customer.servicePeriods?.[service.id]?.[
+                field as "startDate" | "endDate"
+              ] || ""
+            );
+          })()
+        : key === "services"
+          ? servicesText(customer)
+          : key === "pkg"
+            ? pkgLabel(customer.pkg)
+            : customer[key],
+    ),
+  );
 export async function exportExcel(rows: Customer[], template = false) {
   const XLSX = await import("xlsx");
   const grid: unknown[][] = [
     Object.values(excelHeaders),
-    ...rows.map((k) =>
-      Object.keys(excelHeaders).map((key) =>
-        excelSafe(key === "pkg" ? pkgLabel(k.pkg) : k[key]),
-      ),
-    ),
+    ...rows.map(customerExcelRow),
   ];
   if (template)
     grid.push([
@@ -303,6 +457,10 @@ export async function exportExcel(rows: Customer[], template = false) {
       "not_contacted",
       "",
       "",
+      "Chữ ký số; Hóa đơn điện tử",
+      ...additionalDatedServices.flatMap((service) =>
+        service.id === "e_invoice" ? ["2026-10-22", "2027-10-22"] : ["", ""],
+      ),
     ]);
   const sheet = XLSX.utils.aoa_to_sheet(grid);
   sheet["!cols"] = Object.keys(excelHeaders).map(() => ({ wch: 23 }));

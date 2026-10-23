@@ -27,6 +27,14 @@ Mở http://127.0.0.1:3000. Để thử trên điện thoại cùng mạng, ch�
 
 Nhắc hạn 7/30/90 ngày và đã hết hạn; công việc hôm nay; quản lý khách, chăm sóc/lịch hẹn và lịch sử gia hạn; mẫu và nội dung Zalo hàng loạt; báo cáo, in/lưu PDF; nhập/xuất Excel; JSON sao lưu/khôi phục; kiểm tra dữ liệu cần sửa.
 
+Mỗi khách có thể chọn nhiều dịch vụ trong form thêm/sửa: Chữ ký số, Bảo hiểm xã hội, Hóa đơn điện tử, Phần mềm Khấu trừ thuế TNCN, Căn hộ cho thuê, Đào tạo AI, Đào tạo đầu tư tài chính, Môi giới đầu tư và Khác. Danh sách hiển thị nhãn dịch vụ và có bộ lọc kết hợp với tìm kiếm/chăm sóc/gói/trạng thái. Hồ sơ hiển thị đầy đủ các dịch vụ đã chọn.
+
+Khách cũ chưa có phân loại được hiểu là dùng Chữ ký số. Giá, gói, ngày cấp/hết hạn và lịch sử hiện có tiếp tục dành cho chữ ký số. Bảo hiểm xã hội, Hóa đơn điện tử, Phần mềm Khấu trừ thuế TNCN và Căn hộ cho thuê có ngày bắt đầu/hết hạn riêng trong form và hồ sơ. Bỏ chọn dịch vụ giữ các ngày đã lưu nhưng ngừng tính kỳ hạn đó trong nhắc hạn; chọn lại sẽ hiện thông tin cũ.
+
+Nhắc gia hạn xét kỳ hạn của cả 5 dịch vụ, có nhóm 7/30/90 ngày và đã hết hạn. Mỗi khách xuất hiện một lần, hiển thị các dịch vụ có hạn phù hợp với bộ lọc. Công việc hôm nay gộp các lý do ưu tiên theo khách và tiếp tục tôn trọng lịch hẹn. Báo cáo giá trị, giá trung bình và biểu đồ CKS giữ phạm vi chữ ký số; liên kết KPI CKS mở nhóm nhắc hạn có lọc Chữ ký số sẵn. Gia hạn có giao dịch vẫn dành cho CKS; kỳ hạn dịch vụ bổ sung được cập nhật trong Sửa khách hàng.
+
+Excel có cột “Dịch vụ” (nhiều tên ngăn bằng dấu chấm phẩy) và 8 cột ngày riêng cho 4 dịch vụ bổ sung. Khi cập nhật, cột thiếu/trống giữ thông tin đã lưu, kể cả các kỳ hạn khác. CSV giữ ngày nguyên văn, Excel dùng ngày serial có hỗ trợ hệ ngày 1900/1904. JSON sao lưu/khôi phục giữ danh sách dịch vụ và kỳ hạn, kiểm tra ngày trước khi ghi.
+
 Zalo chỉ soạn/sao chép nội dung và mở liên hệ, không tự gửi. Sau khi gửi thật, cập nhật “Đã nhắn Zalo” trong hồ sơ để áp dụng lịch hẹn tự động 2 ngày. “Đã gọi” tự hẹn 3 ngày, “Chờ phản hồi” 1 ngày; gia hạn/từ chối xóa lịch hẹn.
 
 Mẫu Zalo dùng lại khóa localStorage `crm_cks_zalo_templates_v1`. Cùng origin đọc được mẫu cũ; khi đổi origin/trình duyệt, xuất JSON mẫu ở nơi cũ rồi dùng Nhập mẫu trong phần Mẫu & nội dung Zalo. Dữ liệu mẫu không được đồng bộ lên Firebase.

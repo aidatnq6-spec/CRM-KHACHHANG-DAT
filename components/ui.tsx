@@ -7,8 +7,11 @@ import {
   daysLeft,
   statusLabels,
   statusOf,
+  matchingDeadlines,
+  deadlineStatus,
 } from "@/lib/domain";
 import type { Customer } from "@/lib/types";
+import { hasSignature } from "@/lib/services";
 export function Spinner({ label = "Đang tải dữ liệu…" }: { label?: string }) {
   return (
     <div className="loading" role="status">
@@ -46,7 +49,39 @@ export function CareBadge({ customer }: { customer: Customer }) {
     </span>
   );
 }
-export function ExpiryBadge({ customer }: { customer: Customer }) {
+export function ExpiryBadge({
+  customer,
+  service,
+}: {
+  customer: Customer;
+  service?: string;
+}) {
+  if (service) {
+    const period = matchingDeadlines(
+      customer,
+      undefined,
+      undefined,
+      service,
+    )[0];
+    const status = deadlineStatus(customer, undefined, service);
+    return (
+      <span
+        className={`badge expiry-${status}${status === "expiring" && period && period.days <= 7 ? " is-urgent" : ""}`}
+      >
+        {status === "inactive"
+          ? statusLabels.inactive
+          : !period
+            ? "Chưa có ngày hết hạn"
+            : period.days < 0
+              ? `Quá ${-period.days} ngày`
+              : period.days === 0
+                ? "Hết hạn hôm nay"
+                : `Còn ${period.days} ngày`}
+      </span>
+    );
+  }
+  if (!hasSignature(customer))
+    return <span className="badge expiry-unknown">Không dùng CKS</span>;
   const d = daysLeft(customer.expireDate),
     status = statusOf(customer);
   return (

@@ -7,6 +7,8 @@ import {
   parseBackup,
   parseGrid,
   planExcelImport,
+  customerExcelRow,
+  excelHeaders,
 } from "./transfer";
 import type { Customer } from "./types";
 test("JSON nguồn giữ ID, trường bổ sung, history, careLogs và phục hồi timestamp", () => {
@@ -26,6 +28,56 @@ test("JSON nguồn giữ ID, trường bổ sung, history, careLogs và phục h
   assert.deepEqual(parsed.data?.extra, { arbitrary: 1 });
   assert.ok(parsed.data?.createdAt instanceof Timestamp);
   assert.equal(parsed.data?.history?.[0].price, 200);
+});
+
+test("services round-trip through Excel and JSON; invalid names are reported", () => {
+  const customer: Customer = {
+    id: "multi",
+    name: "Khách nhiều dịch vụ",
+    services: ["digital_signature", "e_invoice", "ai_training"],
+    phone: "0901234567",
+  };
+  const parsed = parseGrid([
+    Object.values(excelHeaders),
+    customerExcelRow(customer),
+  ]);
+  assert.deepEqual(parsed[0].data.services, customer.services);
+  assert.equal(parsed[0].errors.length, 0);
+  const restored = parseBackup(
+    JSON.parse(
+      JSON.stringify(backupPayload([customer], "test@example.test", "uid")),
+    ),
+  )[0];
+  assert.deepEqual(restored.data?.services, customer.services);
+  assert.throws(() =>
+    parseBackup({
+      customers: [{ id: "a", data: { name: "Khách", services: ["unknown"] } }],
+    }),
+  );
+  assert.equal(
+    parseGrid([
+      ["Tên khách hàng", "Dịch vụ"],
+      ["Sai dịch vụ", "Không có trong danh mục"],
+    ])[0].errors.length,
+    1,
+  );
+});
+
+test("old/blank Excel service columns preserve existing classifications when updating", () => {
+  const entries = parseGrid([
+    ["Tên khách hàng", "Số điện thoại", "Dịch vụ"],
+    ["Khách", "0901234567", ""],
+  ]);
+  const existing: Customer[] = [
+    { id: "ai", name: "Khách", phone: "0901234567", services: ["ai_training"] },
+  ];
+  const plan = planExcelImport(entries, existing, "update");
+  assert.equal(plan.operations[0].data?.services, undefined);
+  const exported = customerExcelRow({ id: "legacy", name: "Cũ" });
+  assert.equal(
+    exported[Object.keys(excelHeaders).indexOf("services")],
+    "Chữ ký số",
+  );
 });
 test("JSON chặn ID đường dẫn và ID trùng trước khi ghi", () => {
   assert.throws(() =>

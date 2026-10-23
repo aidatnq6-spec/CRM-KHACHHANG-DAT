@@ -22,6 +22,12 @@ import type { CareStatus, Customer } from "@/lib/types";
 import { readableError, useCRM } from "./crm-provider";
 import CustomerForm, { RenewalForm } from "./customer-form";
 import { CareBadge, ExpiryBadge, Modal } from "./ui";
+import {
+  additionalDatedServices,
+  hasSignature,
+  servicesOf,
+} from "@/lib/services";
+import CustomerServices from "./customer-services";
 export default function CustomerDetail({
   customer,
   onClose,
@@ -65,6 +71,16 @@ export default function CustomerDetail({
         expire: undefined,
       })),
     ].sort((a, b) => b.date.localeCompare(a.date));
+  const signature = hasSignature(customer);
+  const savedSignature =
+    signature ||
+    !!(
+      customer.pkg ||
+      customer.issueDate ||
+      customer.expireDate ||
+      customer.price ||
+      customer.history?.length
+    );
   return (
     <Modal
       title={
@@ -103,6 +119,10 @@ export default function CustomerDetail({
               <p>{customer.bizName || customer.contact || "Chưa có công ty"}</p>
             </div>
           </div>
+          <section className="profile-services">
+            <h4>Dịch vụ của khách hàng</h4>
+            <CustomerServices customer={customer} />
+          </section>
           <div className="profile-badges">
             <ExpiryBadge customer={customer} />
             <CareBadge customer={customer} />
@@ -120,10 +140,15 @@ export default function CustomerDetail({
             <button className="button zalo" onClick={() => onZalo(customer)}>
               Soạn Zalo
             </button>
-            <button className="button primary" onClick={() => setMode("renew")}>
-              <RefreshCw size={16} />
-              Gia hạn
-            </button>
+            {signature && (
+              <button
+                className="button primary"
+                onClick={() => setMode("renew")}
+              >
+                <RefreshCw size={16} />
+                Gia hạn
+              </button>
+            )}
             <button
               className="button secondary"
               onClick={() => setMode("edit")}
@@ -181,24 +206,55 @@ export default function CustomerDetail({
               Lưu chăm sóc
             </button>
           </section>
-          <section className="profile-section">
-            <h4>Thông tin dịch vụ</h4>
-            <dl className="detail-grid">
-              {[
-                ["Ngày cấp", fmtDate(customer.issueDate)],
-                ["Ngày hết hạn", fmtDate(customer.expireDate)],
-                ["Gói dịch vụ", pkgLabel(customer.pkg)],
-                ["Giá hiện tại", money(customer.price)],
-                ["Tổng giá trị giao dịch", money(lifetimeValue(customer))],
-                ["Số giao dịch", String(history.length)],
-              ].map(([key, value]) => (
-                <div key={key}>
-                  <dt>{key}</dt>
-                  <dd>{value}</dd>
-                </div>
-              ))}
-            </dl>
-          </section>
+          {savedSignature && (
+            <section className="profile-section">
+              <h4>
+                {signature ? "Dịch vụ chữ ký số" : "Thông tin chữ ký số đã lưu"}
+              </h4>
+              <dl className="detail-grid">
+                {[
+                  ["Ngày cấp", fmtDate(customer.issueDate)],
+                  ["Ngày hết hạn", fmtDate(customer.expireDate)],
+                  ["Gói dịch vụ", pkgLabel(customer.pkg)],
+                  ["Giá hiện tại", money(customer.price)],
+                  ["Tổng giá trị giao dịch", money(lifetimeValue(customer))],
+                  ["Số giao dịch", String(history.length)],
+                ].map(([key, value]) => (
+                  <div key={key}>
+                    <dt>{key}</dt>
+                    <dd>{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          )}
+          {additionalDatedServices
+            .filter((service) => servicesOf(customer).includes(service.id))
+            .map((service) => (
+              <section
+                className="profile-section service-period-detail"
+                key={service.id}
+              >
+                <h4>{service.label}</h4>
+                <dl className="detail-grid">
+                  <div>
+                    <dt>Ngày bắt đầu</dt>
+                    <dd>
+                      {fmtDate(
+                        customer.servicePeriods?.[service.id]?.startDate,
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Ngày hết hạn</dt>
+                    <dd>
+                      {fmtDate(customer.servicePeriods?.[service.id]?.endDate)}
+                    </dd>
+                  </div>
+                </dl>
+                <ExpiryBadge customer={customer} service={service.id} />
+              </section>
+            ))}
           <section className="profile-section">
             <h4>Thông tin liên hệ</h4>
             <dl className="detail-grid">
