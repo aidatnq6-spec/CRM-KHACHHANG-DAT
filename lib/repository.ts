@@ -22,6 +22,7 @@ import type {
   CustomerPatch,
   HistoryEntry,
 } from "./types";
+import { appointmentUpdate } from "./work-queue";
 
 export function customerCollection(uid: string) {
   return collection(firebaseClient().db, "users", uid, "cksCustomers");
@@ -45,6 +46,10 @@ export function carePatch(status: CareStatus, title?: string, script = "") {
     careLogs: arrayUnion(log),
     updatedAt: serverTimestamp(),
   };
+}
+export function appointmentPatch(date: string, note: string) {
+  const { patch, log } = appointmentUpdate(date, note);
+  return { ...patch, careLogs: arrayUnion(log), updatedAt: serverTimestamp() };
 }
 export function withoutUndefined<T>(value: T): T {
   if (Array.isArray(value)) return value.map(withoutUndefined) as T;

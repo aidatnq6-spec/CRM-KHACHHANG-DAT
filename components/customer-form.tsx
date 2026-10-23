@@ -31,6 +31,22 @@ export default function CustomerForm({
   );
   const [followDate, setFollowDate] = useState(customer?.followUpDate || ""),
     [followNote, setFollowNote] = useState(customer?.followUpNote || "");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  function fieldProps(name: string) {
+    return {
+      "aria-invalid": !!fieldErrors[name],
+      "aria-describedby": fieldErrors[name]
+        ? `customer-${name}-error`
+        : undefined,
+    };
+  }
+  function fieldError(name: string) {
+    return fieldErrors[name] ? (
+      <span className="field-error" id={`customer-${name}-error`}>
+        {fieldErrors[name]}
+      </span>
+    ) : null;
+  }
   async function commit(data: CustomerPatch, targetId = customer?.id) {
     setError("");
     try {
@@ -52,21 +68,34 @@ export default function CustomerForm({
     data.careStatus = care;
     data.followUpDate = followDate;
     data.followUpNote = followNote;
-    if (!String(data.name).trim()) {
-      setError("Vui lòng nhập tên khách hàng.");
-      return;
-    }
-    if (Number(data.price) < 0 || !Number.isFinite(data.price)) {
-      setError("Giá tiền phải là số không âm.");
-      return;
-    }
+    const invalid: Record<string, string> = {};
+    if (!String(data.name || "").trim())
+      invalid.name = "Vui lòng nhập tên khách hàng.";
+    const priceInput = e.currentTarget.elements.namedItem(
+      "price",
+    ) as HTMLInputElement;
+    if (
+      Number(data.price) < 0 ||
+      !Number.isFinite(data.price) ||
+      !priceInput.validity.valid
+    )
+      invalid.price = "Nhập giá tiền là số nguyên không âm.";
     for (const key of ["issueDate", "expireDate", "followUpDate"] as const)
-      if (data[key] && !normalizeDate(data[key])) {
-        setError("Ngày không hợp lệ. Vui lòng kiểm tra lại.");
-        return;
-      }
-    if (data.issueDate && data.expireDate && data.expireDate < data.issueDate) {
-      setError("Ngày hết hạn phải từ ngày cấp trở đi.");
+      if (
+        (data[key] && !normalizeDate(data[key])) ||
+        !(e.currentTarget.elements.namedItem(key) as HTMLInputElement).validity
+          .valid
+      )
+        invalid[key] = "Vui lòng nhập ngày hợp lệ.";
+    if (data.issueDate && data.expireDate && data.expireDate < data.issueDate)
+      invalid.expireDate = "Ngày hết hạn phải từ ngày cấp trở đi.";
+    setFieldErrors(invalid);
+    if (Object.keys(invalid).length) {
+      (
+        e.currentTarget.elements.namedItem(
+          Object.keys(invalid)[0],
+        ) as HTMLElement
+      )?.focus();
       return;
     }
     const duplicate = duplicateOf(data, crm.rows, customer?.id);
@@ -78,19 +107,23 @@ export default function CustomerForm({
     void commit(data);
   }
   return (
-    <form onSubmit={submit} className="customer-form">
+    <form onSubmit={submit} className="customer-form" noValidate>
       <fieldset disabled={crm.busy}>
         <legend>Thông tin khách hàng</legend>
         <div className="form-grid">
           <label className="span-2">
-            Tên khách hàng <span className="required">*</span>
+            <span>
+              Tên khách hàng <span className="required">*</span>
+            </span>
             <input
               name="name"
+              {...fieldProps("name")}
               defaultValue={customer?.name}
               required
               autoFocus
               maxLength={300}
             />
+            {fieldError("name")}
           </label>
           <label>
             Mã khách hàng
@@ -103,18 +136,6 @@ export default function CustomerForm({
           <label>
             Điện thoại / Email
             <input name="phone" defaultValue={customer?.phone} />
-          </label>
-          <label>
-            Mã số thuế / CCCD
-            <input name="mst" defaultValue={customer?.mst} />
-          </label>
-          <label className="span-2">
-            Tên công ty
-            <input name="bizName" defaultValue={customer?.bizName} />
-          </label>
-          <label className="span-2">
-            Địa chỉ
-            <input name="address" defaultValue={customer?.address} />
           </label>
         </div>
       </fieldset>
@@ -140,27 +161,33 @@ export default function CustomerForm({
             Giá tiền (VNĐ)
             <input
               name="price"
+              {...fieldProps("price")}
               type="number"
               min="0"
               step="1"
               defaultValue={customer?.price || ""}
             />
+            {fieldError("price")}
           </label>
           <label>
             Ngày cấp
             <input
               name="issueDate"
+              {...fieldProps("issueDate")}
               type="date"
               defaultValue={normalizeDate(customer?.issueDate)}
             />
+            {fieldError("issueDate")}
           </label>
           <label>
             Ngày hết hạn
             <input
               name="expireDate"
+              {...fieldProps("expireDate")}
               type="date"
               defaultValue={normalizeDate(customer?.expireDate)}
             />
+            {fieldError("expireDate")}
           </label>
           <label className="span-2">
             Trạng thái hoạt động
@@ -207,10 +234,12 @@ export default function CustomerForm({
             Ngày hẹn liên hệ
             <input
               name="followUpDate"
+              {...fieldProps("followUpDate")}
               type="date"
               value={followDate}
               onChange={(e) => setFollowDate(e.target.value)}
             />
+            {fieldError("followUpDate")}
           </label>
           <label className="span-2">
             Nội dung lịch hẹn
@@ -220,16 +249,38 @@ export default function CustomerForm({
               onChange={(e) => setFollowNote(e.target.value)}
             />
           </label>
-          <label className="span-2">
-            Ghi chú
-            <textarea name="note" rows={3} defaultValue={customer?.note} />
-          </label>
-          <label className="span-2">
-            Ghi chú nhà cung cấp
-            <textarea name="note2" rows={2} defaultValue={customer?.note2} />
-          </label>
         </div>
       </fieldset>
+      <details className="form-supplement" open={!!customer}>
+        <summary>
+          Thông tin bổ sung <span>Công ty, mã số thuế, địa chỉ và ghi chú</span>
+        </summary>
+        <fieldset disabled={crm.busy}>
+          <legend className="sr-only">Thông tin bổ sung</legend>
+          <div className="form-grid">
+            <label>
+              Mã số thuế / CCCD
+              <input name="mst" defaultValue={customer?.mst} />
+            </label>
+            <label>
+              Tên công ty
+              <input name="bizName" defaultValue={customer?.bizName} />
+            </label>
+            <label className="span-2">
+              Địa chỉ
+              <input name="address" defaultValue={customer?.address} />
+            </label>
+            <label className="span-2">
+              Ghi chú
+              <textarea name="note" rows={3} defaultValue={customer?.note} />
+            </label>
+            <label className="span-2">
+              Ghi chú nhà cung cấp
+              <textarea name="note2" rows={2} defaultValue={customer?.note2} />
+            </label>
+          </div>
+        </fieldset>
+      </details>
       {error && (
         <div className="alert error" role="alert">
           {error}

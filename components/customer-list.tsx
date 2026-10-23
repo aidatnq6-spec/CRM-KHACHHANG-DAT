@@ -19,6 +19,7 @@ import {
   pkgLabel,
   phoneDigits,
   statusOf,
+  todayVN,
 } from "@/lib/domain";
 import type { Customer } from "@/lib/types";
 import { CareBadge, Empty, ExpiryBadge } from "./ui";
@@ -29,6 +30,9 @@ export default function CustomerList({
   onSelect,
   onZalo,
   showStatus = false,
+  care,
+  onCareChange,
+  sortLabel,
 }: {
   rows: Customer[];
   onOpen: (id: string) => void;
@@ -36,31 +40,56 @@ export default function CustomerList({
   onSelect: (ids: string[], select: boolean) => void;
   onZalo: (k: Customer) => void;
   showStatus?: boolean;
+  care: string;
+  onCareChange: (value: string) => void;
+  sortLabel: string;
 }) {
   const [query, setQuery] = useState(""),
-    [care, setCare] = useState(""),
     [pkg, setPkg] = useState(""),
     [status, setStatus] = useState(""),
     [page, setPage] = useState(1),
-    [filters, setFilters] = useState(false);
+    [filters, setFilters] = useState(false),
+    [expiresToday, setExpiresToday] = useState(false),
+    [appointments, setAppointments] = useState(false);
+  const today = todayVN();
+  function clearSelection() {
+    onSelect([...selected], false);
+    setPage(1);
+  }
+  function setCare(value: string) {
+    onCareChange(value);
+    clearSelection();
+  }
   const packages = [...new Set(rows.map((k) => pkgLabel(k.pkg)))].sort();
   const filtered = rows.filter(
     (k) =>
       matchesSearch(k, query) &&
       (!care || careOf(k) === care) &&
       (!pkg || pkgLabel(k.pkg) === pkg) &&
-      (!status || statusOf(k) === status),
+      (!status || statusOf(k) === status) &&
+      (!expiresToday || daysLeft(k.expireDate, today) === 0) &&
+      (!appointments || !!(k.followUpDate && k.followUpDate <= today)),
   );
   const pages = Math.max(1, Math.ceil(filtered.length / 15)),
     current = Math.min(page, pages),
     shown = filtered.slice((current - 1) * 15, current * 15);
   const all = shown.length > 0 && shown.every((k) => selected.has(k.id));
-  const active = !!(care || pkg || status || query);
+  const active = !!(
+    care ||
+    pkg ||
+    status ||
+    query ||
+    expiresToday ||
+    appointments
+  );
   function reset() {
     setQuery("");
     setCare("");
     setPkg("");
     setStatus("");
+    setExpiresToday(false);
+    setAppointments(false);
+    clearSelection();
     setPage(1);
   }
   return (
@@ -74,7 +103,7 @@ export default function CustomerList({
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
-              setPage(1);
+              clearSelection();
             }}
           />
           {query && (
@@ -83,7 +112,7 @@ export default function CustomerList({
               aria-label="Xóa tìm kiếm"
               onClick={() => {
                 setQuery("");
-                setPage(1);
+                clearSelection();
               }}
             >
               <X size={16} />
@@ -125,7 +154,7 @@ export default function CustomerList({
             value={pkg}
             onChange={(e) => {
               setPkg(e.target.value);
-              setPage(1);
+              clearSelection();
             }}
           >
             <option value="">Tất cả gói</option>
@@ -139,7 +168,7 @@ export default function CustomerList({
               value={status}
               onChange={(e) => {
                 setStatus(e.target.value);
-                setPage(1);
+                clearSelection();
               }}
             >
               <option value="">Tất cả trạng thái</option>
@@ -152,20 +181,100 @@ export default function CustomerList({
           )}
         </div>
       </div>
+      <div
+        className="quick-filters"
+        role="group"
+        aria-label="Lọc nhanh khách hàng"
+      >
+        <button
+          aria-pressed={care === "not_contacted"}
+          onClick={() =>
+            setCare(care === "not_contacted" ? "" : "not_contacted")
+          }
+        >
+          Chưa liên hệ
+        </button>
+        <button
+          aria-pressed={expiresToday}
+          onClick={() => {
+            setExpiresToday(!expiresToday);
+            clearSelection();
+          }}
+        >
+          Hết hạn hôm nay
+        </button>
+        <button
+          aria-pressed={appointments}
+          onClick={() => {
+            setAppointments(!appointments);
+            clearSelection();
+          }}
+        >
+          Lịch hẹn đến hạn
+        </button>
+      </div>
+      {active && (
+        <div className="active-filters" aria-label="Bộ lọc đang áp dụng">
+          {[
+            query && { label: `Tìm: ${query}`, clear: () => setQuery("") },
+            care && {
+              label: careLabels[care as keyof typeof careLabels],
+              clear: () => setCare(""),
+            },
+            pkg && { label: pkg, clear: () => setPkg("") },
+            status && {
+              label: {
+                active: "Còn hạn",
+                expiring: "Sắp hết hạn",
+                expired: "Đã hết hạn",
+                inactive: "Ngừng hoạt động",
+                unknown: "Chưa rõ hạn",
+              }[status],
+              clear: () => setStatus(""),
+            },
+            expiresToday && {
+              label: "Hết hạn hôm nay",
+              clear: () => setExpiresToday(false),
+            },
+            appointments && {
+              label: "Lịch hẹn đến hạn",
+              clear: () => setAppointments(false),
+            },
+          ]
+            .filter(Boolean)
+            .map(
+              (item) =>
+                item && (
+                  <button
+                    key={item.label}
+                    aria-label={`Bỏ lọc ${item.label}`}
+                    onClick={() => {
+                      item.clear();
+                      clearSelection();
+                    }}
+                  >
+                    {item.label}
+                    <X size={14} />
+                  </button>
+                ),
+            )}
+        </div>
+      )}
       <div className="list-caption">
-        <span>
+        <span role="status">
           <strong>{filtered.length}</strong> khách hàng
           {active ? " phù hợp" : ""}
         </span>
-        {active ? (
-          <button className="text-button" onClick={reset}>
-            Xóa bộ lọc
-          </button>
-        ) : (
+        <div className="caption-actions">
+          {active && (
+            <button className="text-button" onClick={reset}>
+              Xóa bộ lọc
+            </button>
+          )}
           <span className="muted sort-label">
-            <ArrowDown size={13} /> Theo thứ tự ưu tiên
+            <ArrowDown size={13} /> {sortLabel}
           </span>
-        )}
+        </div>
       </div>
       {!shown.length ? (
         <Empty>

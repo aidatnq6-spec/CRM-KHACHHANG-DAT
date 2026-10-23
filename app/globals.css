@@ -359,7 +359,7 @@ legend {
   gap: 6px;
   padding: 4px 9px;
   border-radius: 5px;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.65;
   font-weight: 500;
   white-space: nowrap;
@@ -475,7 +475,7 @@ legend {
 .brand small {
   display: block;
   color: #b3c5d6;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
   letter-spacing: 0;
   margin-top: 1px;
@@ -498,7 +498,7 @@ legend {
   gap: 8px;
   padding: 35px 12px 17px;
   color: #b5c6d6;
-  font-size: 11px;
+  font-size: 12px;
 }
 .workspace-label .pulse-dot {
   background: #8fcab2;
@@ -516,7 +516,7 @@ legend {
   padding: 12px;
   border-radius: 8px;
   color: #bfcedd;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
   text-align: left;
   position: relative;
@@ -546,7 +546,7 @@ legend {
   border-radius: 5px;
   background: #bce3d3;
   color: #173e35;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 .nav-item.nav-divider {
@@ -584,7 +584,7 @@ legend {
 }
 .sidebar-tip p {
   color: #b1c3d4;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.9;
   margin-top: 7px;
 }
@@ -607,12 +607,12 @@ legend {
 .sidebar-account strong {
   display: block;
   color: #ebf2f8;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
 }
 .sidebar-account small {
   display: block;
-  font-size: 10px;
+  font-size: 12px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -665,7 +665,7 @@ legend {
   align-items: center;
   gap: 7px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 .mobile-brand {
@@ -705,7 +705,7 @@ legend {
   align-items: center;
   gap: 16px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
   padding: 27px 0 22px;
   margin-top: auto;
 }
@@ -739,7 +739,7 @@ legend {
 .stat:disabled {
   opacity: 1;
 }
-.stat:not(:disabled):hover {
+button.stat:hover {
   background: #f8fafb;
 }
 .stat > span {
@@ -766,7 +766,7 @@ legend {
   overflow-wrap: anywhere;
 }
 .stat > small {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
   line-height: 1.8;
 }
@@ -809,7 +809,7 @@ legend {
   letter-spacing: -0.4px;
 }
 .renewal-heading p {
-  font-size: 11px;
+  font-size: 12px;
   margin-top: 3px;
 }
 .range-tabs {
@@ -911,7 +911,7 @@ legend {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 12px;
 }
 table {
   width: 100%;
@@ -922,7 +922,7 @@ th {
   background: #f7f9fb;
   color: #576c80;
   padding: 13px 14px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
   border-top: 1px solid var(--line);
@@ -930,14 +930,14 @@ th {
 }
 td {
   padding: 16px 14px;
-  font-size: 12px;
+  font-size: 14px;
   vertical-align: middle;
   border-bottom: 1px solid #eaf0f5;
   overflow-wrap: anywhere;
 }
 td small {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.75;
   color: var(--muted);
   margin-top: 4px;
@@ -1002,7 +1002,7 @@ tr[data-urgency="expired"] .check-cell:before {
 }
 .customer-name {
   text-align: left;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.65;
   padding: 0;
@@ -1016,11 +1016,11 @@ tr[data-urgency="expired"] .check-cell:before {
 }
 .customer-name small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
 }
 .date-text {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
@@ -1042,7 +1042,7 @@ tr[data-urgency="expired"] .check-cell:before {
   border: 1px solid #d8e5f4;
   background: var(--blue-light);
   color: #2c6098;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 .zalo-button:hover {
@@ -1055,7 +1055,7 @@ tr[data-urgency="expired"] .check-cell:before {
   gap: 16px;
   padding: 15px 23px;
   border-top: 1px solid var(--line);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 .pagination > div {
@@ -1123,7 +1123,7 @@ tr[data-urgency="expired"] .check-cell:before {
 }
 .filter-chips span {
   opacity: 0.7;
-  font-size: 11px;
+  font-size: 12px;
 }
 .task-list {
   display: flex;
@@ -1183,6 +1183,254 @@ tr[data-urgency="expired"] .check-cell:before {
   font-size: 12px;
 }
 
+/* Today's queue groups all reasons for one customer and keeps actions in context. */
+.today-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.today-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.today-list-heading h2 {
+  font-size: 18px;
+  color: var(--navy);
+  scroll-margin-top: 85px;
+}
+.today-list-heading h2 > span {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 14px;
+}
+.today-list-heading > span,
+.today-scope {
+  font-size: 12px;
+  color: var(--muted);
+}
+.today-result {
+  color: var(--green);
+  font-size: 13px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.today-result:empty {
+  display: none;
+}
+.today-result svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.today-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-anchor: none;
+}
+.work-card {
+  padding: 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  min-width: 0;
+  scroll-margin-top: 85px;
+}
+.work-card.is-current {
+  border-color: #91bdac;
+  box-shadow: inset 3px 0 var(--green);
+}
+.work-card-heading,
+.work-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.work-card-heading {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.work-identity {
+  min-width: 0;
+  flex: 1;
+}
+.work-identity > div {
+  min-width: 0;
+}
+.work-identity .customer-name {
+  font-size: 16px;
+}
+.work-identity small {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+}
+.work-symbol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  color: var(--green);
+  background: var(--green-light);
+}
+.work-priority {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.work-priority .badge {
+  gap: 6px;
+}
+.appointment-overdue {
+  background: var(--red-light);
+  color: var(--red);
+}
+.appointment-today {
+  background: var(--amber-light);
+  color: var(--amber);
+}
+.appointment-upcoming {
+  background: var(--blue-light);
+  color: var(--blue);
+}
+.work-current {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--green);
+  font-size: 12px;
+}
+.work-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  margin: 12px 0 0;
+  padding-left: 18px;
+  color: var(--ink);
+  font-size: 13px;
+}
+.work-context {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin: 18px 0 0;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.work-context dt {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.work-context dd {
+  font-size: 14px;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.work-context dd span {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 3px;
+  white-space: pre-wrap;
+}
+.work-note {
+  margin-top: 8px;
+}
+.work-note summary {
+  min-height: 44px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  cursor: pointer;
+  color: var(--green);
+  font-size: 13px;
+}
+.work-note summary::before {
+  content: "+";
+  font-size: 18px;
+}
+.work-note[open] summary::before {
+  content: "−";
+}
+.work-note summary span {
+  color: var(--muted);
+  font-size: 12px;
+}
+.work-note textarea {
+  margin-bottom: 16px;
+}
+.work-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+}
+.work-action-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.work-quick-actions,
+.work-contact-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.work-actions .button {
+  font-size: 13px;
+}
+.work-contact-actions .text-button {
+  min-height: 44px;
+  padding: 8px;
+}
+.work-saving {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 12px;
+}
+.work-schedule {
+  border-top: 1px solid var(--line);
+  margin-top: 18px;
+  padding-top: 18px;
+}
+.work-schedule h3 {
+  font-size: 15px;
+  color: var(--navy);
+}
+.work-schedule > p {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.work-schedule > .field-error {
+  color: var(--red);
+}
+.work-schedule-fields {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) 2fr;
+  gap: 16px;
+  margin: 14px 0;
+}
+.work-schedule-fields label + label {
+  margin-top: 0;
+}
+.work-card > .alert {
+  margin-bottom: 14px;
+}
+
 /* Profiles use quieter sections; dialogs keep native focus and keyboard behavior. */
 .dialog {
   position: fixed;
@@ -1231,7 +1479,8 @@ tr[data-urgency="expired"] .check-cell:before {
   color: var(--navy);
 }
 .dialog-body {
-  padding: 28px;
+  --dialog-padding: 28px;
+  padding: var(--dialog-padding);
 }
 .dialog-body > label {
   margin-top: 17px;
@@ -1255,7 +1504,7 @@ tr[data-urgency="expired"] .check-cell:before {
   margin-top: 4px;
 }
 .profile-heading .section-note {
-  font-size: 11px;
+  font-size: 12px;
   margin-bottom: 3px;
 }
 .profile-badges {
@@ -1366,7 +1615,7 @@ tr[data-urgency="expired"] .check-cell:before {
 .timeline small {
   display: block;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 .timeline strong {
   display: block;
@@ -1705,7 +1954,7 @@ tr[data-urgency="expired"] .check-cell:before {
   min-height: 34px;
   border: 1px solid #e0e9e6;
   border-radius: 5px;
-  font-size: 11px;
+  font-size: 12px;
   background: #f2f8f5;
   color: var(--green);
 }
@@ -1819,7 +2068,7 @@ tr[data-urgency="expired"] .check-cell:before {
   height: 100%;
 }
 .monthly-chart small {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
   text-align: center;
 }
@@ -1839,7 +2088,7 @@ tr[data-urgency="expired"] .check-cell:before {
   border-radius: 4px 4px 0 0;
 }
 .monthly-chart span {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 .top-customers {
@@ -1873,7 +2122,7 @@ tr[data-urgency="expired"] .check-cell:before {
   color: var(--muted);
 }
 .footnote {
-  font-size: 11px;
+  font-size: 12px;
 }
 .forecast-list {
   display: flex;
@@ -2213,6 +2462,152 @@ tr[data-urgency="expired"] .check-cell:before {
   color: var(--muted);
 }
 
+/* Working controls share readable labels and clear, reversible filter states. */
+.summary-toggle {
+  display: none;
+}
+.field-error {
+  color: var(--red);
+  font-size: 12px;
+  font-weight: 400;
+}
+[aria-invalid="true"] {
+  border-color: var(--red);
+}
+.form-supplement {
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+}
+.form-supplement summary {
+  cursor: pointer;
+  min-height: 44px;
+  font-weight: 600;
+  color: var(--navy);
+}
+.form-supplement summary span {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 400;
+  margin: 4px 0 0 18px;
+}
+.form-supplement fieldset {
+  margin: 20px 0 0;
+}
+.customer-form > .form-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background: var(--surface);
+  margin: 24px calc(-1 * var(--dialog-padding)) calc(-1 * var(--dialog-padding));
+  padding: 16px var(--dialog-padding) calc(16px + env(safe-area-inset-bottom));
+  box-shadow: 0 -6px 16px #17324d06;
+}
+.quick-filters,
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 22px 12px;
+}
+.quick-filters button {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 8px 12px;
+  min-height: 44px;
+  font-size: 13px;
+  color: var(--muted);
+  background: var(--surface);
+}
+.quick-filters button:hover {
+  border-color: var(--green);
+}
+.quick-filters button[aria-pressed="true"] {
+  color: var(--green);
+  background: var(--green-light);
+  border-color: #91bdac;
+  font-weight: 600;
+}
+.active-filters button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  min-height: 44px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  border-radius: 6px;
+  font-size: 12px;
+  background: var(--blue-light);
+  color: var(--navy);
+  text-align: left;
+}
+.active-filters svg {
+  flex-shrink: 0;
+}
+.caption-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.zalo-confirmation {
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 14px;
+}
+.zalo-confirmation p {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  color: var(--green);
+}
+.zalo-confirmation svg {
+  flex-shrink: 0;
+}
+.report-period {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+.report-period select {
+  width: auto;
+  min-height: 44px;
+}
+.report-scope {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: -10px;
+}
+.report-title {
+  flex-wrap: wrap;
+}
+.report-title > .inline-actions {
+  margin-left: auto;
+}
+.priority-panel .forecast-row {
+  width: 100%;
+  align-items: center;
+}
+.priority-panel .forecast-row > span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: right;
+}
+.priority-panel .forecast-row > span svg {
+  flex-shrink: 0;
+}
+
 @media (min-width: 1600px) {
   .main-content {
     padding: 38px 46px 0;
@@ -2239,7 +2634,7 @@ tr[data-urgency="expired"] .check-cell:before {
   }
   .nav-item {
     gap: 9px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .nav-item.active:after {
     left: -13px;
@@ -2258,23 +2653,23 @@ tr[data-urgency="expired"] .check-cell:before {
     padding: 17px 16px;
   }
   .stat > span {
-    font-size: 11px;
+    font-size: 12px;
   }
   .stat > strong {
     font-size: 31px;
   }
   .stat > small {
-    font-size: 11px;
+    font-size: 12px;
   }
   .renewal-heading h2 {
     font-size: 16px;
   }
   .renewal-heading p {
-    font-size: 11px;
+    font-size: 12px;
   }
   .range-tabs button {
     padding: 8px 10px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .list-toolbar {
     flex-wrap: wrap;
@@ -2357,12 +2752,12 @@ tr[data-urgency="expired"] .check-cell:before {
     height: 41px;
   }
   .brand small {
-    font-size: 10px;
+    font-size: 12px;
   }
   .nav-item {
     gap: 8px;
     padding: 12px 9px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .nav-item svg {
     width: 17px;
@@ -2371,7 +2766,7 @@ tr[data-urgency="expired"] .check-cell:before {
     left: -10px;
   }
   .sidebar-account small {
-    font-size: 9px;
+    font-size: 12px;
   }
   .sidebar-tip {
     margin-left: 7px;
@@ -2419,7 +2814,7 @@ tr[data-urgency="expired"] .check-cell:before {
     align-items: flex-start;
   }
   .sidebar-tip p {
-    font-size: 10px;
+    font-size: 12px;
   }
   .login-story {
     padding: 35px;
@@ -2466,7 +2861,7 @@ tr[data-urgency="expired"] .check-cell:before {
   }
   .header-actions .button {
     min-height: 40px;
-    font-size: 11px;
+    font-size: 12px;
     padding: 9px 11px;
     gap: 6px;
   }
@@ -2496,7 +2891,7 @@ tr[data-urgency="expired"] .check-cell:before {
     display: none;
   }
   .page-heading > .button {
-    font-size: 11px;
+    font-size: 12px;
     padding: 8px 10px;
     margin-top: 5px;
   }
@@ -2507,7 +2902,7 @@ tr[data-urgency="expired"] .check-cell:before {
     padding: 13px 15px;
   }
   .stat > span {
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1.8;
     gap: 4px;
   }
@@ -2534,7 +2929,7 @@ tr[data-urgency="expired"] .check-cell:before {
     letter-spacing: -0.35px;
   }
   .renewal-heading p {
-    font-size: 11px;
+    font-size: 12px;
     margin-top: 3px;
   }
   .intro-icon {
@@ -2554,7 +2949,7 @@ tr[data-urgency="expired"] .check-cell:before {
     flex: 1;
     min-height: 40px;
     padding: 8px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .list-panel {
     background: transparent;
@@ -2621,10 +3016,10 @@ tr[data-urgency="expired"] .check-cell:before {
   }
   .list-caption {
     padding: 14px 0 12px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .sort-label {
-    font-size: 10px;
+    font-size: 12px;
   }
   .desktop-table {
     display: none;
@@ -2679,7 +3074,7 @@ tr[data-urgency="expired"] .check-cell:before {
   }
   .card-subtitle {
     color: var(--muted);
-    font-size: 11px;
+    font-size: 12px;
     margin: 5px 0 14px 28px;
   }
   .card-dates {
@@ -2697,7 +3092,7 @@ tr[data-urgency="expired"] .check-cell:before {
     flex-direction: column;
     gap: 2px;
     color: var(--muted);
-    font-size: 11px;
+    font-size: 12px;
   }
   .card-dates strong {
     font-size: 13px;
@@ -2705,12 +3100,12 @@ tr[data-urgency="expired"] .check-cell:before {
     color: var(--navy);
   }
   .customer-card > .badge {
-    font-size: 11px;
+    font-size: 12px;
   }
   .customer-card > small {
     display: block;
     color: var(--muted);
-    font-size: 11px;
+    font-size: 12px;
     margin-top: 7px;
   }
   .card-actions {
@@ -2724,7 +3119,7 @@ tr[data-urgency="expired"] .check-cell:before {
   .card-actions .button {
     min-height: 44px;
     padding: 9px 10px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .card-actions > a {
     flex: 1 1 100%;
@@ -2734,12 +3129,12 @@ tr[data-urgency="expired"] .check-cell:before {
     flex: 1;
   }
   .card-actions > .muted {
-    font-size: 11px;
+    font-size: 12px;
   }
   .pagination {
     padding: 18px 0 0;
     border: 0;
-    font-size: 11px;
+    font-size: 12px;
   }
   .pagination > div {
     gap: 10px;
@@ -2770,7 +3165,7 @@ tr[data-urgency="expired"] .check-cell:before {
     gap: 5px;
     min-height: 48px;
     color: #6d7e91;
-    font-size: 10px;
+    font-size: 12px;
     position: relative;
   }
   .bottom-nav button.active {
@@ -2787,7 +3182,7 @@ tr[data-urgency="expired"] .check-cell:before {
     background: var(--green);
   }
   .main-footer {
-    font-size: 10px;
+    font-size: 12px;
     padding-bottom: 0;
     align-items: flex-start;
     margin-top: 5px;
@@ -2804,7 +3199,7 @@ tr[data-urgency="expired"] .check-cell:before {
     gap: 8px;
   }
   .bulk-bar .button {
-    font-size: 11px;
+    font-size: 12px;
     min-height: 42px;
     padding: 7px 11px;
   }
@@ -2864,7 +3259,8 @@ tr[data-urgency="expired"] .check-cell:before {
     font-size: 16px;
   }
   .dialog-body {
-    padding: 23px 21px;
+    --dialog-padding: 21px;
+    padding: 23px var(--dialog-padding);
   }
   .dialog label {
     font-size: 13px;
@@ -2895,7 +3291,7 @@ tr[data-urgency="expired"] .check-cell:before {
     gap: 20px 16px;
   }
   .detail-grid dt {
-    font-size: 11px;
+    font-size: 12px;
   }
   .detail-grid dd {
     font-size: 13px;
@@ -2934,7 +3330,7 @@ tr[data-urgency="expired"] .check-cell:before {
     max-width: calc(100% - 60px);
   }
   .issue-row .badge {
-    font-size: 10px;
+    font-size: 12px;
   }
   .danger-zone {
     flex-direction: column;
@@ -2974,7 +3370,7 @@ tr[data-urgency="expired"] .check-cell:before {
   .variable-list button {
     min-height: 40px;
     padding: 9px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .message-bubble {
     font-size: 13px;
@@ -2990,17 +3386,17 @@ tr[data-urgency="expired"] .check-cell:before {
     font-size: 20px;
   }
   .report-title .button {
-    font-size: 11px;
+    font-size: 12px;
   }
   .monthly-chart {
     gap: 8px;
   }
   .monthly-chart small {
-    font-size: 9px;
+    font-size: 12px;
   }
   .top-customers .customer-name,
   .top-customers strong {
-    font-size: 11px;
+    font-size: 12px;
   }
   .toast {
     left: 50%;
@@ -3034,7 +3430,7 @@ tr[data-urgency="expired"] .check-cell:before {
     border-radius: 9px;
   }
   .login-story .brand small {
-    font-size: 10px;
+    font-size: 12px;
   }
   .login-message {
     padding: 28px 0 0;
@@ -3069,7 +3465,7 @@ tr[data-urgency="expired"] .check-cell:before {
     font-size: 25px;
   }
   .login-form > .section-note {
-    font-size: 11px;
+    font-size: 12px;
   }
   .login-form > p {
     font-size: 12px;
@@ -3120,36 +3516,37 @@ tr[data-urgency="expired"] .check-cell:before {
     padding-right: 16px;
   }
   .header-actions .button {
-    font-size: 10px;
+    font-size: 12px;
     padding: 9px 10px;
   }
   .renewal-heading h2 {
     font-size: 14px;
   }
   .renewal-heading p {
-    font-size: 10px;
+    font-size: 12px;
   }
   .range-tabs button {
-    font-size: 11px;
+    font-size: 12px;
     padding: 8px 6px;
   }
   .stat {
     padding: 12px;
   }
   .stat > span {
-    font-size: 10px;
+    font-size: 12px;
   }
   .sort-label {
-    font-size: 9px;
+    font-size: 12px;
   }
   .customer-card {
     padding: 16px;
   }
   .card-dates .badge {
-    font-size: 10px;
+    font-size: 12px;
   }
   .dialog-body {
-    padding: 21px 18px;
+    --dialog-padding: 18px;
+    padding: 21px var(--dialog-padding);
   }
   .form-grid {
     grid-template-columns: 1fr;
@@ -3158,7 +3555,200 @@ tr[data-urgency="expired"] .check-cell:before {
     grid-column: span 1;
   }
   .login-form > small {
-    font-size: 11px;
+    font-size: 12px;
+  }
+}
+@media (max-width: 900px) {
+  .main-content {
+    padding-top: 16px;
+    gap: 14px;
+  }
+  .page-heading p {
+    display: none;
+  }
+  .header-actions .button {
+    font-size: 13px;
+    min-height: 44px;
+  }
+  .test-mode-banner {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  .summary-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    min-height: 44px;
+    padding: 0;
+    font-size: 13px;
+    color: var(--navy);
+    text-align: left;
+  }
+  .summary-toggle > span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--green);
+    font-size: 12px;
+  }
+  .summary-section:not(.expanded) #reminder-summary {
+    display: none;
+  }
+  .summary-section.expanded .summary-toggle svg {
+    transform: rotate(180deg);
+  }
+  .summary-section.expanded .stats-grid {
+    margin-top: 8px;
+  }
+  .stat > span {
+    font-size: 12px;
+  }
+  .renewal-heading p {
+    font-size: 12px;
+  }
+  .quick-filters {
+    padding: 12px 0 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  .quick-filters button {
+    flex-shrink: 0;
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+  .active-filters {
+    padding: 12px 0 0;
+  }
+  .search-field input {
+    font-size: 16px;
+  }
+  .list-caption {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .caption-actions {
+    gap: 6px 12px;
+  }
+  .sort-label {
+    font-size: 12px;
+  }
+  .card-subtitle,
+  .customer-card > small {
+    font-size: 12px;
+  }
+  .card-heading .customer-name {
+    font-size: 15px;
+  }
+  .card-actions .button {
+    font-size: 13px;
+  }
+  .profile-actions .button {
+    font-size: 13px;
+  }
+  .profile-section {
+    padding: 20px 0;
+  }
+  .profile-badges {
+    margin: 14px 0;
+  }
+  .profile-actions {
+    margin-bottom: 20px;
+  }
+  .form-grid {
+    gap: 14px 12px;
+  }
+  .form-supplement summary span {
+    max-width: 260px;
+  }
+  .report-period {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .report-period select {
+    flex: 1;
+    font-size: 16px;
+    min-width: 170px;
+  }
+  .report-title > .inline-actions {
+    flex-wrap: wrap;
+    margin-left: 0;
+  }
+  .report-scope {
+    margin-top: 0;
+  }
+  .priority-panel .panel-heading {
+    flex-wrap: wrap;
+  }
+  .priority-panel .forecast-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .priority-panel .forecast-row > span {
+    text-align: left;
+    font-size: 12px;
+  }
+}
+@media (max-width: 900px) {
+  .today-workspace {
+    gap: 14px;
+  }
+  .today-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 5px;
+  }
+  .today-filters button {
+    flex-shrink: 0;
+    gap: 7px;
+  }
+  .work-card {
+    padding: 17px;
+  }
+  .work-card-heading {
+    align-items: flex-start;
+  }
+  .work-card-heading > .badge {
+    margin-left: 54px;
+  }
+  .work-identity {
+    flex-basis: 100%;
+  }
+  .work-context {
+    gap: 16px;
+  }
+  .work-quick-actions,
+  .work-contact-actions {
+    width: 100%;
+  }
+  .work-quick-actions .button {
+    flex: 1;
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+  .work-contact-actions {
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+  }
+  .work-contact-actions .button {
+    flex: 1;
+  }
+  .work-note textarea,
+  .work-schedule input,
+  .work-schedule textarea {
+    font-size: 16px;
+  }
+}
+@media (max-width: 500px) {
+  .work-context,
+  .work-schedule-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .work-quick-actions .button {
+    flex-basis: calc(50% - 8px);
+  }
+  .work-quick-actions .button:first-child {
+    flex-basis: 100%;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -3181,7 +3771,7 @@ tr[data-urgency="expired"] .check-cell:before {
   }
   body {
     background: #fff;
-    font-size: 11px;
+    font-size: 12px;
   }
   .no-print,
   .bottom-nav,

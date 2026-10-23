@@ -19,6 +19,7 @@ import { onSnapshot, updateDoc } from "firebase/firestore";
 import { firebaseClient } from "@/lib/firebase";
 import {
   carePatch,
+  appointmentPatch,
   customerCollection,
   customerDoc,
   saveCustomer,
@@ -27,6 +28,7 @@ import {
   type WriteOperation,
 } from "@/lib/repository";
 import { careLabels, nextFollowUp, transactions } from "@/lib/domain";
+import { appointmentUpdate } from "@/lib/work-queue";
 import meta from "@/lib/legacy-meta.json";
 import type {
   CareStatus,
@@ -57,6 +59,7 @@ type State = {
     script?: string,
   ) => Promise<void>;
   renew: (id: string, entry: HistoryEntry) => Promise<void>;
+  reschedule: (id: string, date: string, note: string) => Promise<void>;
   batch: (ops: WriteOperation[]) => Promise<void>;
   notify: (message: string) => void;
 };
@@ -276,6 +279,7 @@ export default function CRMProvider({ children }: { children: ReactNode }) {
                     ...(!script ? nextFollowUp(status) : {}),
                     careStatus: status,
                     lastCareAt: new Date().toISOString(),
+                    lastCareNote: title || careLabels[status],
                     careLogs: [
                       ...(k.careLogs || []),
                       {
@@ -296,6 +300,27 @@ export default function CRMProvider({ children }: { children: ReactNode }) {
             carePatch(status, title, script),
           );
       }, "Đã lưu chăm sóc và cập nhật lịch hẹn"),
+    reschedule: async (id, date, note) =>
+      action(async () => {
+        const owner = uid();
+        if (testMode) {
+          const { patch, log } = appointmentUpdate(date, note);
+          if (!rows.some((row) => row.id === id))
+            throw new Error("Khách hàng không còn tồn tại.");
+          setRows((previous) =>
+            previous.map((row) =>
+              row.id === id
+                ? {
+                    ...row,
+                    ...patch,
+                    careLogs: [...(row.careLogs || []), log],
+                  }
+                : row,
+            ),
+          );
+        } else
+          await updateDoc(customerDoc(owner, id), appointmentPatch(date, note));
+      }, "Đã lưu lịch hẹn tiếp theo"),
     renew: async (id, entry) =>
       action(async () => {
         const owner = uid();

@@ -2,12 +2,10 @@
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import {
-  ArrowRight,
   CalendarCheck2,
   CalendarClock,
   Check,
   ChevronRight,
-  ClipboardList,
   Copy,
   Database,
   Download,
@@ -24,23 +22,20 @@ import {
   X,
   ChartNoAxesCombined,
 } from "lucide-react";
-import {
-  careOf,
-  daysLeft,
-  expiring,
-  fmtDate,
-  todayTasks,
-  todayVN,
-} from "@/lib/domain";
+import { careOf, daysLeft, expiring, fmtDate, todayVN } from "@/lib/domain";
+import { matchesWorkFilter, workQueue } from "@/lib/work-queue";
 import { buildScript, defaultTemplates, loadTemplates } from "@/lib/templates";
 import type { Customer, Page, ZaloTemplate } from "@/lib/types";
 import { readableError, useCRM } from "./crm-provider";
-import { CareBadge, Empty, ExpiryBadge, Modal, Spinner } from "./ui";
+import { Empty, ExpiryBadge, Modal, Spinner } from "./ui";
 import Login from "./login";
 import CustomerList from "./customer-list";
 import CustomerDetail from "./customer-detail";
 import CustomerForm from "./customer-form";
 import { Stats } from "./reports";
+const TodayWorkspace = dynamic(() => import("./today-workspace"), {
+  loading: () => <Spinner />,
+});
 const Reports = dynamic(() => import("./reports"), {
   loading: () => <Spinner />,
 });
@@ -75,16 +70,17 @@ export default function CRMApp() {
       () => "reminders" as Page,
     );
   const [range, setRange] = useState("30"),
+    [listCare, setListCare] = useState(""),
     [selected, setSelected] = useState<Set<string>>(new Set()),
     [openId, setOpenId] = useState<string | null>(null),
     [adding, setAdding] = useState(false),
-    [more, setMore] = useState(false),
-    [taskFilter, setTaskFilter] = useState("all");
+    [more, setMore] = useState(false);
   const [templates, setTemplates] = useState<ZaloTemplate[]>(defaultTemplates),
     [zaloId, setZaloId] = useState<string | null>(null),
     [zaloKey, setZaloKey] = useState("auto"),
     [returnId, setReturnId] = useState<string | null>(null),
-    [zaloError, setZaloError] = useState("");
+    [zaloError, setZaloError] = useState(""),
+    [zaloConfirmed, setZaloConfirmed] = useState(false);
   const [deleteSelected, setDeleteSelected] = useState(false),
     [deleteText, setDeleteText] = useState(""),
     [operationError, setOperationError] = useState(""),
@@ -100,6 +96,7 @@ export default function CRMApp() {
   function navigate(next: Page) {
     window.location.hash = next;
     setSelected(new Set());
+    setListCare("");
     setMore(false);
   }
   function select(ids: string[], checked: boolean) {
@@ -121,7 +118,13 @@ export default function CRMApp() {
       (k) =>
         k.status !== "inactive" && (daysLeft(k.expireDate, today) ?? 0) < 0,
     );
-  const tasks = useMemo(() => todayTasks(crm.rows, today), [crm.rows, today]);
+  const tasks = useMemo(
+    () =>
+      workQueue(crm.rows, today).filter((item) =>
+        matchesWorkFilter(item, "all"),
+      ),
+    [crm.rows, today],
+  );
   const listed =
     page === "reminders"
       ? range === "expired"
@@ -138,11 +141,26 @@ export default function CRMApp() {
     setZaloId(k.id);
     setZaloKey("auto");
     setZaloError("");
+    setZaloConfirmed(false);
   }
   function closeZalo() {
     setZaloId(null);
     setOpenId(returnId);
     setReturnId(null);
+  }
+  async function confirmZalo() {
+    if (!zaloCustomer || crm.busy || zaloConfirmed) return;
+    setZaloError("");
+    try {
+      await crm.care(
+        zaloCustomer.id,
+        "zalo_sent",
+        "Đã xác nhận gửi tin nhắn Zalo",
+      );
+      setZaloConfirmed(true);
+    } catch (e) {
+      setZaloError(readableError(e));
+    }
   }
   async function copyScript(open = false) {
     if (!zaloCustomer) return;
@@ -315,7 +333,7 @@ export default function CRMApp() {
             )}
           </div>
           {crm.testMode && (
-            <div className="alert warning no-print">
+            <div className="alert warning test-mode-banner no-print">
               Chế độ kiểm thử cục bộ · Dữ liệu tổng hợp · Không kết nối Firebase
               thật
             </div>
@@ -343,6 +361,7 @@ export default function CRMApp() {
               {page === "reminders" && (
                 <>
                   <Stats
+                    collapsible
                     items={[
                       {
                         label: "Sắp hết hạn 30 ngày",
@@ -351,6 +370,7 @@ export default function CRMApp() {
                         accent: "navy-stat",
                         onClick: () => {
                           setRange("30");
+                          setListCare("");
                           setSelected(new Set());
                         },
                       },
@@ -361,6 +381,7 @@ export default function CRMApp() {
                         accent: "amber-stat",
                         onClick: () => {
                           setRange("7");
+                          setListCare("");
                           setSelected(new Set());
                         },
                       },
@@ -370,6 +391,11 @@ export default function CRMApp() {
                           (k) => careOf(k) === "not_contacted",
                         ).length,
                         detail: "Trong nhóm sắp hết hạn 30 ngày",
+                        onClick: () => {
+                          setRange("30");
+                          setListCare("not_contacted");
+                          setSelected(new Set());
+                        },
                       },
                       {
                         label: "Đã hết hạn",
@@ -378,6 +404,7 @@ export default function CRMApp() {
                         accent: "red-stat",
                         onClick: () => {
                           setRange("expired");
+                          setListCare("");
                           setSelected(new Set());
                         },
                       },
@@ -413,6 +440,7 @@ export default function CRMApp() {
                           className={range === r ? "active" : ""}
                           onClick={() => {
                             setRange(r);
+                            setListCare("");
                             setSelected(new Set());
                           }}
                         >
@@ -443,105 +471,23 @@ export default function CRMApp() {
                     onSelect={select}
                     onZalo={openZalo}
                     showStatus={page === "customers"}
+                    care={listCare}
+                    onCareChange={setListCare}
+                    sortLabel={
+                      page === "customers"
+                        ? "Tên khách hàng A–Z"
+                        : "Ngày hết hạn gần nhất"
+                    }
                   />
                 </>
               )}
               {page === "today" && (
-                <>
-                  <Stats
-                    items={[
-                      {
-                        label: "Công việc cần làm",
-                        value: tasks.length,
-                        detail: "Một khách có thể có nhiều việc",
-                      },
-                      {
-                        label: "Lịch hẹn đến hạn",
-                        value: tasks.filter((t) => t.type === "follow").length,
-                        detail: "Hôm nay và các lịch quá hạn",
-                        accent: "amber-stat",
-                      },
-                      {
-                        label: "Chờ phản hồi",
-                        value: tasks.filter((t) => t.type === "waiting").length,
-                        detail: "Cần tiếp nối cuộc trao đổi",
-                      },
-                    ]}
-                  />
-                  <div className="filter-chips">
-                    {[
-                      ["all", "Tất cả"],
-                      ["follow", "Lịch hẹn"],
-                      ["expired", "Đã hết hạn"],
-                      ["urgent", "Còn 7 ngày"],
-                      ["waiting", "Chờ phản hồi"],
-                    ].map(([id, label]) => (
-                      <button
-                        key={id}
-                        className={taskFilter === id ? "active" : ""}
-                        onClick={() => setTaskFilter(id)}
-                      >
-                        {label}
-                        <span>
-                          {
-                            tasks.filter((t) => id === "all" || t.type === id)
-                              .length
-                          }
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                  <div className="task-list">
-                    {!tasks.filter(
-                      (t) => taskFilter === "all" || t.type === taskFilter,
-                    ).length ? (
-                      <Empty
-                        title="Đã hoàn tất các việc trong nhóm này"
-                        detail="Bạn có thể kiểm tra nhóm khác hoặc xem khách sắp hết hạn."
-                      />
-                    ) : (
-                      tasks
-                        .filter(
-                          (t) => taskFilter === "all" || t.type === taskFilter,
-                        )
-                        .map((t) => (
-                          <article
-                            className={`task-row task-${t.type}`}
-                            key={t.customer.id + t.type}
-                          >
-                            <span className="task-symbol">
-                              <ClipboardList size={20} />
-                            </span>
-                            <div className="task-info">
-                              <button
-                                className="customer-name"
-                                onClick={() => setOpenId(t.customer.id)}
-                              >
-                                {t.customer.name}
-                              </button>
-                              <strong>{t.title}</strong>
-                              <small>{t.detail}</small>
-                            </div>
-                            <CareBadge customer={t.customer} />
-                            <div className="task-actions">
-                              <button
-                                className="button secondary"
-                                onClick={() => openZalo(t.customer)}
-                              >
-                                Soạn Zalo
-                              </button>
-                              <button
-                                className="button secondary"
-                                onClick={() => setOpenId(t.customer.id)}
-                              >
-                                Chăm sóc <ArrowRight size={15} />
-                              </button>
-                            </div>
-                          </article>
-                        ))
-                    )}
-                  </div>
-                </>
+                <TodayWorkspace
+                  today={today}
+                  onOpen={setOpenId}
+                  onZalo={openZalo}
+                  overlayOpen={!!openId || !!zaloId}
+                />
               )}
               {(page === "dashboard" || page === "reports") && (
                 <Reports
@@ -701,8 +647,8 @@ export default function CRMApp() {
               value={buildScript(zaloCustomer, templates, zaloKey)}
             />
             <p className="muted">
-              Sao chép và gửi thủ công trong Zalo. Chỉ chọn “Đã nhắn Zalo” trong
-              hồ sơ sau khi bạn gửi.
+              Gửi thủ công trong Zalo, sau đó bấm “Tôi đã gửi” để ghi nhận chăm
+              sóc và hẹn liên hệ lại sau 2 ngày.
             </p>
             {zaloError && (
               <div className="alert error" role="alert">
@@ -725,6 +671,26 @@ export default function CRMApp() {
               >
                 Sao chép & mở Zalo
               </button>
+            </div>
+            <div className="zalo-confirmation">
+              {zaloConfirmed ? (
+                <p role="status">
+                  <Check size={18} /> Đã ghi nhận đã nhắn Zalo và hẹn liên hệ
+                  lại sau 2 ngày.
+                </p>
+              ) : (
+                <>
+                  <span>Đã gửi tin nhắn cho khách?</span>
+                  <button
+                    className="button primary"
+                    disabled={crm.busy}
+                    onClick={() => void confirmZalo()}
+                  >
+                    <Check size={17} />{" "}
+                    {crm.busy ? "Đang xử lý…" : "Tôi đã gửi"}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </Modal>

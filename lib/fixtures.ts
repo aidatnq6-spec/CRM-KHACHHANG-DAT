@@ -48,7 +48,27 @@ export function testCustomers(): Customer[] {
         "declined",
       ] as const
     )[i % 6],
-    followUpDate: i % 4 === 0 ? todayVN() : "",
+    followUpDate:
+      i === 8
+        ? dateAfter(-2)
+        : i === 16
+          ? dateAfter(1)
+          : i === 20
+            ? dateAfter(7)
+            : i === 24
+              ? dateAfter(8)
+              : i === 28
+                ? dateAfter(3)
+                : i % 4 === 0
+                  ? todayVN()
+                  : "",
+    followUpNote:
+      i === 8
+        ? "Trao đổi báo giá gia hạn, khách hẹn gọi buổi sáng"
+        : i % 4 === 0
+          ? "Kiểm tra nhu cầu và tư vấn gói gia hạn"
+          : "",
+    lastCareAt: i === 4 || i === 8 ? `${dateAfter(-1)}T02:30:00Z` : undefined,
     history:
       i % 5 === 0
         ? [
@@ -60,7 +80,17 @@ export function testCustomers(): Customer[] {
             },
           ]
         : [],
-    careLogs: [],
+    careLogs:
+      i === 4 || i === 8
+        ? [
+            {
+              type: "care",
+              status: i === 4 ? "zalo_sent" : "waiting",
+              title: "Khách muốn trao đổi báo giá gia hạn",
+              createdAt: `${dateAfter(-1)}T02:30:00Z`,
+            },
+          ]
+        : [],
     note: "Dữ liệu kiểm thử tổng hợp",
   }));
 }

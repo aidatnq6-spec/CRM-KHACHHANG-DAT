@@ -11,6 +11,7 @@ test("readable workspace at mobile, tablet and desktop widths", async ({
       "reminders",
       "customers",
       "today",
+      "dashboard",
       "reports",
       "zalo",
       "data",

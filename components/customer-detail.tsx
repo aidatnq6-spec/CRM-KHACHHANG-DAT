@@ -133,53 +133,6 @@ export default function CustomerDetail({
             </button>
           </div>
           <section className="profile-section">
-            <h4>Thông tin dịch vụ</h4>
-            <dl className="detail-grid">
-              {[
-                ["Ngày cấp", fmtDate(customer.issueDate)],
-                ["Ngày hết hạn", fmtDate(customer.expireDate)],
-                ["Gói dịch vụ", pkgLabel(customer.pkg)],
-                ["Giá hiện tại", money(customer.price)],
-                ["Tổng giá trị giao dịch", money(lifetimeValue(customer))],
-                ["Số giao dịch", String(history.length)],
-              ].map(([key, value]) => (
-                <div key={key}>
-                  <dt>{key}</dt>
-                  <dd>{value}</dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-          <section className="profile-section">
-            <h4>Thông tin liên hệ</h4>
-            <dl className="detail-grid">
-              {[
-                ["Người liên hệ", customer.contact],
-                ["Điện thoại / Email", customer.phone],
-                ["Mã số thuế / CCCD", customer.mst],
-                ["Công ty", customer.bizName],
-                ["Địa chỉ", customer.address],
-              ].map(([key, value]) => (
-                <div key={key}>
-                  <dt>{key}</dt>
-                  <dd>{value || "—"}</dd>
-                </div>
-              ))}
-            </dl>
-            {customer.note && (
-              <div className="note-block">
-                <strong>Ghi chú</strong>
-                <p>{customer.note}</p>
-              </div>
-            )}
-            {customer.note2 && (
-              <div className="note-block">
-                <strong>Nhà cung cấp</strong>
-                <p>{customer.note2}</p>
-              </div>
-            )}
-          </section>
-          <section className="profile-section">
             <div className="section-heading">
               <h4>Chăm sóc & lịch hẹn</h4>
               <button className="text-button" onClick={() => setMode("edit")}>
@@ -227,6 +180,53 @@ export default function CustomerDetail({
               <Check size={16} />
               Lưu chăm sóc
             </button>
+          </section>
+          <section className="profile-section">
+            <h4>Thông tin dịch vụ</h4>
+            <dl className="detail-grid">
+              {[
+                ["Ngày cấp", fmtDate(customer.issueDate)],
+                ["Ngày hết hạn", fmtDate(customer.expireDate)],
+                ["Gói dịch vụ", pkgLabel(customer.pkg)],
+                ["Giá hiện tại", money(customer.price)],
+                ["Tổng giá trị giao dịch", money(lifetimeValue(customer))],
+                ["Số giao dịch", String(history.length)],
+              ].map(([key, value]) => (
+                <div key={key}>
+                  <dt>{key}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+          <section className="profile-section">
+            <h4>Thông tin liên hệ</h4>
+            <dl className="detail-grid">
+              {[
+                ["Người liên hệ", customer.contact],
+                ["Điện thoại / Email", customer.phone],
+                ["Mã số thuế / CCCD", customer.mst],
+                ["Công ty", customer.bizName],
+                ["Địa chỉ", customer.address],
+              ].map(([key, value]) => (
+                <div key={key}>
+                  <dt>{key}</dt>
+                  <dd>{value || "—"}</dd>
+                </div>
+              ))}
+            </dl>
+            {customer.note && (
+              <div className="note-block">
+                <strong>Ghi chú</strong>
+                <p>{customer.note}</p>
+              </div>
+            )}
+            {customer.note2 && (
+              <div className="note-block">
+                <strong>Nhà cung cấp</strong>
+                <p>{customer.note2}</p>
+              </div>
+            )}
           </section>
           <section className="profile-section">
             <h4>Lịch sử giao dịch & chăm sóc</h4>
