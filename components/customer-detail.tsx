@@ -238,6 +238,21 @@ export default function CustomerDetail({
                 <h4>{service.label}</h4>
                 <dl className="detail-grid">
                   <div>
+                    <dt>Gói dịch vụ</dt>
+                    <dd>
+                      {customer.servicePeriods?.[service.id]?.pkg ||
+                        "Chưa có gói"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Giá tiền (VNĐ)</dt>
+                    <dd>
+                      {customer.servicePeriods?.[service.id]?.price == null
+                        ? "Chưa có giá"
+                        : money(customer.servicePeriods[service.id]!.price)}
+                    </dd>
+                  </div>
+                  <div>
                     <dt>Ngày bắt đầu</dt>
                     <dd>
                       {fmtDate(

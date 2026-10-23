@@ -41,7 +41,7 @@ test("desktop: 30-day queue, customer CRUD, care and renewal", async ({
     .getByLabel("Điện thoại / Email", { exact: true })
     .fill("0998765432");
   await dialog.getByLabel("Gói dịch vụ", { exact: true }).fill("Gói 1 năm");
-  await dialog.getByLabel("Giá tiền (VNĐ)").fill("1500000");
+  await dialog.getByLabel("Giá tiền (VNĐ)", { exact: true }).fill("1500000");
   // Date relative to the application's fixed Vietnamese calendar.
   const today = await page.evaluate(() =>
     new Intl.DateTimeFormat("en-CA", {

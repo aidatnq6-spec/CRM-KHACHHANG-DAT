@@ -14,6 +14,7 @@ import {
   duplicateOf,
   fmtDate,
   matchesSearch,
+  money,
   pkgLabel,
   todayVN,
 } from "@/lib/domain";
@@ -142,7 +143,7 @@ export default function DataWorkspace({
             Đọc file hiện có, kiểm tra dữ liệu và khách trùng trước khi lưu. Cột
             “Dịch vụ” có thể chứa nhiều tên, ngăn cách bằng dấu chấm phẩy. BHXH,
             hóa đơn điện tử, khấu trừ thuế TNCN và căn hộ có cột ngày bắt
-            đầu/hết hạn riêng trong file mẫu.
+            đầu/hết hạn, gói dịch vụ và giá tiền riêng trong file mẫu.
           </p>
           <div className="tool-actions">
             <label
@@ -372,7 +373,7 @@ export default function DataWorkspace({
                   <th>Dịch vụ</th>
                   <th>Gói</th>
                   <th>Hết hạn</th>
-                  <th>Kỳ hạn dịch vụ bổ sung</th>
+                  <th>Thông tin dịch vụ bổ sung</th>
                   <th>Kiểm tra</th>
                 </tr>
               </thead>
@@ -405,6 +406,19 @@ export default function DataWorkspace({
                             →{" "}
                             {fmtDate(
                               r.data.servicePeriods?.[service.id]?.endDate,
+                            )}
+                            {r.data.servicePeriods?.[service.id]?.pkg && (
+                              <> · {r.data.servicePeriods[service.id]!.pkg}</>
+                            )}
+                            {r.data.servicePeriods?.[service.id]?.price !=
+                              null && (
+                              <>
+                                {" "}
+                                ·{" "}
+                                {money(
+                                  r.data.servicePeriods[service.id]!.price,
+                                )}
+                              </>
                             )}
                           </div>
                         ))}

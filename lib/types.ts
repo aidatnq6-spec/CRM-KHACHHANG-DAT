@@ -13,6 +13,8 @@ export type ServiceId =
 export type AdditionalDatedServiceId =
   "social_insurance" | "e_invoice" | "pit_withholding" | "apartment_rental";
 export interface ServicePeriod {
+  pkg?: string;
+  price?: number;
   startDate?: string;
   endDate?: string;
 }

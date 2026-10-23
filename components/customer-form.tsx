@@ -94,6 +94,21 @@ export default function CustomerForm({
     for (const service of additionalDatedServices) {
       if (!services.includes(service.id)) continue;
       const period = { ...periods[service.id] };
+      period.pkg = String(fields.get(`period-${service.id}-pkg`) || "").trim();
+      const priceField = `period-${service.id}-price`;
+      const servicePrice = String(fields.get(priceField) || "").trim();
+      const servicePriceInput = e.currentTarget.elements.namedItem(
+        priceField,
+      ) as HTMLInputElement;
+      if (
+        !servicePriceInput.validity.valid ||
+        (servicePrice &&
+          (!Number.isSafeInteger(Number(servicePrice)) ||
+            Number(servicePrice) < 0))
+      )
+        invalid[priceField] = "Nhập giá tiền là số nguyên không âm.";
+      if (servicePrice) period.price = Number(servicePrice);
+      else delete period.price;
       for (const key of ["startDate", "endDate"] as const) {
         const field = `period-${service.id}-${key}`;
         const value = String(fields.get(field) || "").trim();
@@ -203,7 +218,7 @@ export default function CustomerForm({
         <legend>Dịch vụ của khách hàng</legend>
         <p className="service-help">
           Chọn một hoặc nhiều dịch vụ khách đang sử dụng. Mỗi dịch vụ có kỳ hạn
-          được nhập ngày riêng bên dưới; giá và gói hiện tại dành cho chữ ký số.
+          được nhập ngày, gói và giá riêng bên dưới.
         </p>
         <div className="service-options">
           {serviceCatalog.map((service) => (
@@ -293,6 +308,44 @@ export default function CustomerForm({
         >
           <legend>{service.label}</legend>
           <div className="form-grid">
+            <label>
+              Gói dịch vụ
+              <input
+                name={`period-${service.id}-pkg`}
+                aria-label={`Gói dịch vụ · ${service.label}`}
+                defaultValue={customer?.servicePeriods?.[service.id]?.pkg || ""}
+                placeholder="Chọn hoặc nhập gói"
+                list={`packages-${service.id}`}
+              />
+              <datalist id={`packages-${service.id}`}>
+                {[
+                  ...new Set(
+                    crm.rows
+                      .map((row) => row.servicePeriods?.[service.id]?.pkg)
+                      .filter((value): value is string => !!value),
+                  ),
+                ]
+                  .sort()
+                  .map((value) => (
+                    <option key={value}>{value}</option>
+                  ))}
+              </datalist>
+            </label>
+            <label>
+              Giá tiền (VNĐ)
+              <input
+                name={`period-${service.id}-price`}
+                aria-label={`Giá tiền (VNĐ) · ${service.label}`}
+                type="number"
+                min="0"
+                step="1"
+                defaultValue={
+                  customer?.servicePeriods?.[service.id]?.price ?? ""
+                }
+                {...fieldProps(`period-${service.id}-price`)}
+              />
+              {fieldError(`period-${service.id}-price`)}
+            </label>
             {(["startDate", "endDate"] as const).map((key) => {
               const field = `period-${service.id}-${key}`;
               const label =

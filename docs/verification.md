@@ -76,3 +76,13 @@ Kiểm tra dùng dữ liệu tổng hợp cục bộ, không ghi Firebase thật
 - Lint, TypeScript qua production build và định dạng mã được kiểm tra. Nhắc hạn tính các dịch vụ có ngày, còn biểu đồ/giá trị CKS và giao dịch gia hạn giữ phạm vi chữ ký số; trạng thái chăm sóc và lịch hẹn vẫn theo khách.
 
 Kiểm tra dùng adapter cục bộ với dữ liệu tổng hợp, không ghi Firebase thật. Chưa kiểm tra đồng bộ/quyền ghi trên tài khoản production và chưa phát hành.
+
+## Gói và giá cho bốn dịch vụ bổ sung — 23/10/2026
+
+- Bảo hiểm xã hội, Hóa đơn điện tử, Phần mềm Khấu trừ thuế TNCN và Căn hộ cho thuê có gói/giá riêng trong form và hồ sơ, cùng các ngày đã có. Giá 0 đồng được giữ, giá chưa biết có thể để trống. Bỏ/chọn lại dịch vụ giữ thông tin đã lưu.
+- 33/33 unit tests qua, gồm 3 kiểm tra mới về round-trip Excel/JSON đủ bốn gói/giá, cập nhật một phần giữ ngày và dịch vụ khác, từ chối giá âm/lẻ/không hữu hạn hoặc kiểu gói/giá sai.
+- 31/31 browser tests qua, gồm 3 luồng mới về lưu/mở lại đủ bốn gói/giá và giá CKS độc lập, bộ lọc gói theo dịch vụ, xác thực/focus/bảo toàn thông tin trên mobile, xem trước/nhập/xuất Excel kể cả giá 0. Test CKS cũ dùng nhãn giá khớp chính xác để phân biệt các dịch vụ mới.
+- Lint, TypeScript trong production build và định dạng mã qua. Đã xem ảnh desktop/mobile; form nhiều dịch vụ không tràn ngang ở 360/768/1024/1440px. Các kiểm tra kỳ hạn, Dashboard, chăm sóc, Zalo và hydration tiếp tục qua.
+- Excel thêm 8 cột gói/giá bên cạnh 8 cột ngày; xem trước hiển thị gói và giá, mẫu có ví dụ Hóa đơn điện tử. Giá trị và giao dịch trong báo cáo CKS giữ phạm vi chữ ký số.
+
+Các kiểm tra ghi dữ liệu dùng adapter tổng hợp cục bộ. Không ghi Firebase thật hoặc phát hành trong lượt này.

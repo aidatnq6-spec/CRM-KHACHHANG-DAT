@@ -131,6 +131,17 @@ export function parseBackup(payload: unknown): WriteOperation[] {
         )
           throw new Error(`Kỳ hạn dịch vụ ở bản ghi ${i + 1} không hợp lệ.`);
         const value = period as Record<string, unknown>;
+        if (value.pkg !== undefined && typeof value.pkg !== "string")
+          throw new Error(`Gói dịch vụ ở bản ghi ${i + 1} không hợp lệ.`);
+        if (
+          value.price !== undefined &&
+          (typeof value.price !== "number" ||
+            !Number.isSafeInteger(value.price) ||
+            value.price < 0)
+        )
+          throw new Error(
+            `Giá dịch vụ ở bản ghi ${i + 1} phải là số nguyên không âm.`,
+          );
         for (const field of ["startDate", "endDate"])
           if (
             value[field] !== undefined &&
@@ -153,6 +164,21 @@ export function parseBackup(payload: unknown): WriteOperation[] {
   });
 }
 export type ImportRow = { row: number; data: CustomerPatch; errors: string[] };
+const serviceFieldLabels = {
+  startDate: "Ngày bắt đầu",
+  endDate: "Ngày hết hạn",
+  pkg: "Gói dịch vụ",
+  price: "Giá tiền (VNĐ)",
+} as const;
+const importPrice = (raw: unknown) =>
+  typeof raw === "number"
+    ? raw
+    : Number(
+        String(raw)
+          .replace(/(?:vnd|đ|₫|\s)/gi, "")
+          .replace(/[.,](?=\d{3}(?:[.,]|$))/g, "")
+          .replace(",", "."),
+      );
 const oldPositions = [
   "name",
   "mst",
@@ -177,10 +203,8 @@ const columnMap: Record<string, string> = {
   "dich vu": "services",
   ...Object.fromEntries(
     additionalDatedServices.flatMap((service) =>
-      (["startDate", "endDate"] as const).map((field) => [
-        normalizeText(
-          `${field === "startDate" ? "Ngày bắt đầu" : "Ngày hết hạn"} ${service.label}`,
-        ),
+      Object.entries(serviceFieldLabels).map(([field, label]) => [
+        normalizeText(`${label} ${service.label}`),
         `period:${service.id}:${field}`,
       ]),
     ),
@@ -232,6 +256,21 @@ export function parseGrid(grid: unknown[][], date1904 = false): ImportRow[] {
         delete data[key];
       }
       const period = periods[service.id];
+      const packageKey = `period:${service.id}:pkg`;
+      const priceKey = `period:${service.id}:price`;
+      if (data[packageKey] !== undefined)
+        periods[service.id] = {
+          ...periods[service.id],
+          pkg: String(data[packageKey]).trim(),
+        };
+      if (data[priceKey] !== undefined) {
+        const price = importPrice(data[priceKey]);
+        if (!Number.isSafeInteger(price) || price < 0)
+          errors.push(`${service.label}: Giá tiền phải là số nguyên không âm`);
+        else periods[service.id] = { ...periods[service.id], price };
+      }
+      delete data[packageKey];
+      delete data[priceKey];
       if (
         period?.startDate &&
         period.endDate &&
@@ -276,15 +315,7 @@ export function parseGrid(grid: unknown[][], date1904 = false): ImportRow[] {
       errors.push("Hết hạn trước ngày cấp");
     if (data.price !== undefined) {
       const raw = data.price;
-      const normalized =
-        typeof raw === "number"
-          ? raw
-          : Number(
-              String(raw)
-                .replace(/(?:vnd|đ|₫|\s)/gi, "")
-                .replace(/[.,](?=\d{3}(?:[.,]|$))/g, "")
-                .replace(",", "."),
-            );
+      const normalized = importPrice(raw);
       if (!Number.isFinite(normalized) || normalized < 0)
         errors.push("Giá tiền không hợp lệ");
       else data.price = normalized;
@@ -405,6 +436,14 @@ export const excelHeaders: Record<string, string> = {
       ]),
     ),
   ),
+  ...Object.fromEntries(
+    additionalDatedServices.flatMap((service) =>
+      (["pkg", "price"] as const).map((field) => [
+        `period:${service.id}:${field}`,
+        `${serviceFieldLabels[field]} ${service.label}`,
+      ]),
+    ),
+  ),
 };
 export const excelSafe = (value: unknown) =>
   typeof value === "string" && /^[=+@\-\t\r]/.test(value)
@@ -421,8 +460,8 @@ export const customerExcelRow = (customer: Customer) =>
             )!;
             return (
               customer.servicePeriods?.[service.id]?.[
-                field as "startDate" | "endDate"
-              ] || ""
+                field as keyof typeof serviceFieldLabels
+              ] ?? ""
             );
           })()
         : key === "services"
@@ -460,6 +499,9 @@ export async function exportExcel(rows: Customer[], template = false) {
       "Chữ ký số; Hóa đơn điện tử",
       ...additionalDatedServices.flatMap((service) =>
         service.id === "e_invoice" ? ["2026-10-22", "2027-10-22"] : ["", ""],
+      ),
+      ...additionalDatedServices.flatMap((service) =>
+        service.id === "e_invoice" ? ["Gói 500 số", 500000] : ["", ""],
       ),
     ]);
   const sheet = XLSX.utils.aoa_to_sheet(grid);

@@ -22,9 +22,10 @@ import {
   deadlineStatus,
   type DeadlineRange,
 } from "@/lib/domain";
-import type { Customer } from "@/lib/types";
+import type { AdditionalDatedServiceId, Customer } from "@/lib/types";
 import { CareBadge, Empty } from "./ui";
 import {
+  additionalDatedServices,
   hasSignature,
   isServiceId,
   serviceCatalog,
@@ -75,12 +76,24 @@ export default function CustomerList({
     onCareChange(value);
     clearSelection();
   }
-  const packages = [...new Set(rows.map((k) => pkgLabel(k.pkg)))].sort();
+  const packagesFor = (customer: Customer) =>
+    servicesOf(customer)
+      .filter((id) => !service || id === service)
+      .map((id) =>
+        id === "digital_signature"
+          ? pkgLabel(customer.pkg)
+          : additionalDatedServices.some((item) => item.id === id)
+            ? customer.servicePeriods?.[id as AdditionalDatedServiceId]?.pkg ||
+              ""
+            : "",
+      )
+      .filter(Boolean);
+  const packages = [...new Set(rows.flatMap(packagesFor))].sort();
   const filtered = rows.filter(
     (k) =>
       matchesSearch(k, query) &&
       (!care || careOf(k) === care) &&
-      (!pkg || pkgLabel(k.pkg) === pkg) &&
+      (!pkg || packagesFor(k).includes(pkg)) &&
       (!status ||
         deadlineStatus(
           k,
@@ -178,6 +191,7 @@ export default function CustomerList({
             value={service}
             onChange={(event) => {
               setService(event.target.value);
+              setPkg("");
               clearSelection();
             }}
           >
