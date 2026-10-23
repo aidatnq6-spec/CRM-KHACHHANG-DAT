@@ -86,3 +86,12 @@ Kiểm tra dùng adapter cục bộ với dữ liệu tổng hợp, không ghi F
 - Excel thêm 8 cột gói/giá bên cạnh 8 cột ngày; xem trước hiển thị gói và giá, mẫu có ví dụ Hóa đơn điện tử. Giá trị và giao dịch trong báo cáo CKS giữ phạm vi chữ ký số.
 
 Các kiểm tra ghi dữ liệu dùng adapter tổng hợp cục bộ. Không ghi Firebase thật hoặc phát hành trong lượt này.
+
+## Đủ bốn trường cho mọi dịch vụ — 23/10/2026
+
+- Đào tạo AI, Đào tạo đầu tư tài chính, Môi giới đầu tư và Khác được đưa vào cùng cơ chế thông tin dịch vụ: gói, giá tiền, ngày bắt đầu và ngày hết hạn. Cả 9 dịch vụ có đầy đủ thông tin riêng; CKS giữ cấu trúc cũ, tám dịch vụ còn lại dùng các mục độc lập trong `servicePeriods`.
+- 33/33 unit tests qua. Kiểm tra round-trip gói/giá Excel và JSON mở rộng từ 4 lên đủ 8 dịch vụ ngoài CKS, bao gồm giá 0. Khách AI chưa nhập hạn có cảnh báo thiếu ngày của AI và vẫn không bị tính nhầm theo ngày CKS đã lưu.
+- 32/32 browser tests qua. Các luồng gói/giá và CSV mở rộng đủ 8 dịch vụ ngoài CKS; thêm luồng mobile nhập/lưu/mở lại bốn trường của bốn dịch vụ còn lại, kiểm tra 3 kỳ hạn sắp đến, 4 lý do hôm nay và một thẻ khách duy nhất. Kiểm tra cũ cập nhật nhãn chưa có ngày hết hạn cho dịch vụ đào tạo nay có kỳ hạn riêng.
+- Đã xem ảnh form desktop/mobile với các dịch vụ mới, không tràn ngang. Lint, TypeScript trong production build qua; Excel tự thêm đủ 16 cột ngày và 16 cột gói/giá cho tám dịch vụ ngoài CKS.
+
+Kiểm tra dùng dữ liệu tổng hợp cục bộ; không ghi Firebase thật hoặc phát hành.

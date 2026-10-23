@@ -15,12 +15,7 @@ export const isServiceId = (value: unknown): value is ServiceId =>
   serviceCatalog.some((service) => service.id === value);
 export const additionalDatedServices = serviceCatalog.filter(
   (service): service is { id: AdditionalDatedServiceId; label: string } =>
-    [
-      "social_insurance",
-      "e_invoice",
-      "pit_withholding",
-      "apartment_rental",
-    ].includes(service.id),
+    service.id !== "digital_signature",
 );
 export function selectedServicePeriods(customer: Customer) {
   return servicesOf(customer).flatMap<{

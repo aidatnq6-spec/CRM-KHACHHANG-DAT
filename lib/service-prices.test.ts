@@ -34,7 +34,8 @@ const customer: Customer = {
   ),
 };
 
-test("four independent packages/prices including zero round-trip Excel and JSON", () => {
+test("all eight independent packages/prices including zero round-trip Excel and JSON", () => {
+  assert.equal(additionalDatedServices.length, 8);
   const row = parseGrid([
     Object.values(excelHeaders),
     customerExcelRow(customer),

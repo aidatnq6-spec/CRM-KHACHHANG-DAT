@@ -9,8 +9,12 @@ const packages = [
   "500 số hóa đơn",
   "100 chứng từ",
   "Thuê 6 tháng",
+  "AI cơ bản",
+  "Khóa đầu tư 6 buổi",
+  "Tư vấn 12 tháng",
+  "Gói tùy chọn",
 ];
-const prices = [250000, 500000, 0, 15000000];
+const prices = [250000, 500000, 0, 15000000, 2000000, 3000000, 1500000, 0];
 async function createCustomer(page: Page) {
   await page.goto("/#customers");
   await page
@@ -147,7 +151,7 @@ test("mobile validates service prices and preserves saved package, price and dat
   );
 });
 
-test("Excel imports and exports all four packages and prices including zero", async ({
+test("Excel imports and exports all eight packages and prices including zero", async ({
   page,
 }) => {
   await page.goto("/#data");

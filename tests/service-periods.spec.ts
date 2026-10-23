@@ -1,7 +1,86 @@
 import { test, expect, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
-import { additionalDatedServices } from "../lib/services";
+import { additionalDatedServices as allAdditionalServices } from "../lib/services";
 import { dateAfter, fmtDate, todayVN } from "../lib/domain";
+
+const additionalDatedServices = allAdditionalServices.slice(0, 4);
+
+test("remaining services support all four fields and participate in reminders and today's grouped work", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto("/#customers");
+  await page
+    .getByRole("button", { name: "Thêm khách hàng", exact: true })
+    .click();
+  const dialog = page.getByRole("dialog");
+  const customerName = "Khách đào tạo đầu tư và dịch vụ khác";
+  await dialog.getByLabel(/Tên khách hàng/).fill(customerName);
+  await dialog
+    .getByRole("checkbox", { name: "Chữ ký số", exact: true })
+    .uncheck();
+  for (const [i, service] of allAdditionalServices.slice(4).entries()) {
+    await dialog
+      .getByRole("checkbox", { name: service.label, exact: true })
+      .check();
+    await dialog
+      .getByLabel(`Gói dịch vụ · ${service.label}`, { exact: true })
+      .fill(`Gói ${i + 1}`);
+    await dialog
+      .getByLabel(`Giá tiền (VNĐ) · ${service.label}`, { exact: true })
+      .fill(String(i * 100000));
+    await dialog
+      .getByLabel(`Ngày bắt đầu · ${service.label}`, { exact: true })
+      .fill(dateAfter(-30));
+    await dialog
+      .getByLabel(`Ngày hết hạn · ${service.label}`, { exact: true })
+      .fill(dateAfter(i - 1));
+  }
+  expect(
+    await dialog.evaluate((node) => node.scrollWidth <= node.clientWidth),
+  ).toBe(true);
+  await dialog
+    .getByRole("button", { name: "Lưu khách hàng", exact: true })
+    .click();
+  await expect(dialog).not.toBeVisible();
+  await page.goto("/#reminders");
+  await page
+    .getByRole("textbox", { name: "Tìm khách hàng", exact: true })
+    .fill(customerName);
+  await expect(page.locator(".customer-card")).toHaveCount(1);
+  await expect(page.locator(".customer-card .service-deadline")).toHaveCount(3);
+  await page
+    .locator(".customer-card")
+    .getByRole("button", { name: "Hồ sơ", exact: true })
+    .click();
+  await expect(dialog.locator(".service-period-detail")).toHaveCount(4);
+  await dialog.getByRole("button", { name: "Sửa", exact: true }).click();
+  for (const [i, service] of allAdditionalServices.slice(4).entries()) {
+    await expect(
+      dialog.getByLabel(`Gói dịch vụ · ${service.label}`, { exact: true }),
+    ).toHaveValue(`Gói ${i + 1}`);
+    await expect(
+      dialog.getByLabel(`Giá tiền (VNĐ) · ${service.label}`, { exact: true }),
+    ).toHaveValue(String(i * 100000));
+    await expect(
+      dialog.getByLabel(`Ngày hết hạn · ${service.label}`, { exact: true }),
+    ).toHaveValue(dateAfter(i - 1));
+  }
+  await dialog.getByRole("button", { name: "Hủy", exact: true }).click();
+  await dialog.getByRole("button", { name: "Đóng", exact: true }).click();
+  await page.goto("/#today");
+  const card = page.locator(".work-card").filter({
+    has: page.getByRole("button", { name: customerName, exact: true }),
+  });
+  await expect(card).toHaveCount(1);
+  for (const service of allAdditionalServices.slice(4))
+    await expect(card.locator(".work-reasons")).toContainText(service.label);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+  ).toBe(false);
+});
 
 const name = "Khách kỳ hạn độc lập";
 const offsets = [0, 7, 31, -1];

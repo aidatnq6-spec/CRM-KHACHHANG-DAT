@@ -59,7 +59,7 @@ test("service-only customers keep signature data but do not create signature exp
       phone: "0901234567",
       services: ["ai_training"],
     }),
-    [],
+    ["Đào tạo AI: Thiếu ngày hết hạn"],
   );
   assert.equal(
     dashboardData([row], "2026-10-23").months.flatMap(

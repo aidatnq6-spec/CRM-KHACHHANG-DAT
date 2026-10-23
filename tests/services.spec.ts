@@ -94,7 +94,7 @@ test("service-only customer can be created and service filtering combines with c
     "Khách đào tạo nhiều dịch vụ",
   );
   await expect(page.locator(".desktop-table tbody tr")).toContainText(
-    "Không dùng CKS",
+    "Chưa có ngày hết hạn",
   );
   await page.getByLabel("Dịch vụ", { exact: true }).selectOption("e_invoice");
   await expect(

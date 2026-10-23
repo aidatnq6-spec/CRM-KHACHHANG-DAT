@@ -10,8 +10,7 @@ export type ServiceId =
   | "financial_training"
   | "investment_brokerage"
   | "other";
-export type AdditionalDatedServiceId =
-  "social_insurance" | "e_invoice" | "pit_withholding" | "apartment_rental";
+export type AdditionalDatedServiceId = Exclude<ServiceId, "digital_signature">;
 export interface ServicePeriod {
   pkg?: string;
   price?: number;

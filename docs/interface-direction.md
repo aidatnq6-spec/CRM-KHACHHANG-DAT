@@ -69,20 +69,20 @@ Chạy các luồng hiện có với dữ liệu tổng hợp, kiểm tra ảnh 
 - Form dùng nhóm checkbox có nhãn đầy đủ cho 9 dịch vụ, yêu cầu chọn ít nhất một. Hai cột ở màn hình rộng, một cột trên điện thoại. Thông tin CKS chỉ hiện khi chọn Chữ ký số; bỏ chọn không xóa dữ liệu đã lưu.
 - Danh sách hiện tối đa hai nhãn và nút “+N dịch vụ” mở hồ sơ đầy đủ. Khi lọc, dịch vụ được chọn luôn hiện trước. Nhãn dài xuống dòng theo từ; nút Zalo giữ trên một dòng.
 - Bộ lọc dịch vụ kết hợp với các điều kiện hiện có, có nhãn điều kiện đang dùng và xóa riêng/xóa hết. Khách chưa có trường dịch vụ mặc định Chữ ký số; danh sách trống rõ ràng được xem là Chưa phân loại.
-- Nhắc hạn tính kỳ hạn của 5 dịch vụ có ngày. Biểu đồ CKS, phân bổ gói và giá trung bình hiện tại giữ phạm vi Chữ ký số. Lịch hẹn, chăm sóc và tổng khách áp dụng cho mọi dịch vụ; lịch sử giao dịch cũ được giữ nguyên.
+- Nhắc hạn tính kỳ hạn của 9 dịch vụ có ngày. Biểu đồ CKS, phân bổ gói và giá trung bình hiện tại giữ phạm vi Chữ ký số. Lịch hẹn, chăm sóc và tổng khách áp dụng cho mọi dịch vụ; lịch sử giao dịch cũ được giữ nguyên.
 - Nhập/xuất Excel dùng tên dịch vụ ngăn bằng dấu chấm phẩy, có xem trước và báo tên không nhận diện. Cột thiếu/trống không ghi đè phân loại khi cập nhật. JSON giữ các mã dịch vụ và từ chối mã không hợp lệ trước khi ghi.
 
 ## Kỳ hạn từng dịch vụ
 
-- BHXH, Hóa đơn điện tử, Phần mềm Khấu trừ thuế TNCN và Căn hộ cho thuê có nhóm ngày bắt đầu/hết hạn riêng khi được chọn. Mỗi trường có nhãn truy cập đầy đủ tên dịch vụ, lỗi cạnh trường và focus khi ngày không hợp lệ. Ngày chưa biết có thể để trống, giống CKS; hệ thống kiểm tra dữ liệu chỉ rõ dịch vụ thiếu ngày hết hạn.
+- Tất cả dịch vụ ngoài CKS có nhóm ngày bắt đầu/hết hạn riêng khi được chọn. Mỗi trường có nhãn truy cập đầy đủ tên dịch vụ, lỗi cạnh trường và focus khi ngày không hợp lệ. Ngày chưa biết có thể để trống, giống CKS; hệ thống kiểm tra dữ liệu chỉ rõ dịch vụ thiếu ngày hết hạn.
 - Hồ sơ hiện từng dịch vụ, cặp ngày và nhãn còn hạn/hết hạn. Bỏ chọn giữ dữ liệu đã lưu, đồng thời dừng nhắc kỳ hạn đó; chọn lại khôi phục giá trị.
 - Nhắc hạn lọc theo đúng cặp dịch vụ/khoảng ngày; một khách có nhiều hạn chỉ xuất hiện một lần với các hạn phù hợp. Khi đổi dịch vụ, thứ tự được tính lại theo kỳ hạn dịch vụ đã chọn. Không dùng hạn CKS thay cho hạn BHXH hay ngược lại.
 - Công việc hôm nay gộp các lý do có tên dịch vụ và ngày hết hạn; vẫn ưu tiên quá hẹn và tạm hoãn khi khách có lịch liên hệ tương lai. Ghi nhận chăm sóc một lần cho khách. Phạm vi này chưa tách trạng thái chăm sóc hay lịch sử giao dịch riêng theo dịch vụ.
-- Excel thêm 8 cột ngày, xem trước từng kỳ hạn và gộp cập nhật từng trường để giữ dịch vụ khác. CSV đọc dạng văn bản để tránh lệch ngày theo múi giờ và mất số 0 đầu; Excel hỗ trợ hai hệ ngày 1900/1904. JSON kiểm tra cấu trúc/ngày/khoảng ngày. Zalo tự động dùng nội dung có tên dịch vụ khi kỳ hạn ưu tiên thuộc dịch vụ bổ sung; mẫu được chọn thủ công vẫn theo lựa chọn người dùng.
+- Excel có 16 cột ngày cho 8 dịch vụ ngoài CKS, xem trước từng kỳ hạn và gộp cập nhật từng trường để giữ dịch vụ khác. CSV đọc dạng văn bản để tránh lệch ngày theo múi giờ và mất số 0 đầu; Excel hỗ trợ hai hệ ngày 1900/1904. JSON kiểm tra cấu trúc/ngày/khoảng ngày. Zalo tự động dùng nội dung có tên dịch vụ khi kỳ hạn ưu tiên thuộc dịch vụ bổ sung; mẫu được chọn thủ công vẫn theo lựa chọn người dùng.
 
 ## Gói và giá từng dịch vụ
 
-- Bốn dịch vụ bổ sung có hàng Gói dịch vụ / Giá tiền (VNĐ) phía trên cặp ngày. Hai cột trên desktop, xếp dọc trên mobile theo form hiện có; nhãn truy cập gồm tên dịch vụ để phân biệt với CKS.
+- Tất cả dịch vụ ngoài CKS có hàng Gói dịch vụ / Giá tiền (VNĐ) phía trên cặp ngày. Hai cột trên desktop, xếp dọc trên mobile theo form hiện có; nhãn truy cập gồm tên dịch vụ để phân biệt với CKS.
 - Gói nhập tự do, gợi ý các gói đã dùng cho đúng dịch vụ. Giá nguyên không âm, cho phép để trống, 0 đồng được lưu/hiển thị riêng với chưa có giá. Lỗi giá hiện cạnh ô và nhận focus. Bỏ/chọn lại giữ thông tin đã lưu cùng ngày.
 - Hồ sơ hiển thị gói và giá cùng dịch vụ. Bộ lọc gói lấy các gói của dịch vụ đang chọn; đổi dịch vụ xóa lựa chọn gói để tránh giữ điều kiện không phù hợp. Không đổi phép tính tài chính CKS trong lượt bổ sung trường này.
-- Excel giữ 8 cột ngày, thêm 8 cột gói/giá, có xem trước và mẫu. Cập nhật một phần giữ ngày, gói/giá bỏ trống và dịch vụ khác; giá sai bị loại trước khi nhập. JSON giữ thông tin và kiểm tra kiểu gói/giá, số nguyên không âm.
+- Excel có 16 cột ngày và 16 cột gói/giá, có xem trước và mẫu. Cập nhật một phần giữ ngày, gói/giá bỏ trống và dịch vụ khác; giá sai bị loại trước khi nhập. JSON giữ thông tin và kiểm tra kiểu gói/giá, số nguyên không âm.

@@ -141,9 +141,9 @@ export default function DataWorkspace({
           <h3>Nhập & xuất Excel</h3>
           <p>
             Đọc file hiện có, kiểm tra dữ liệu và khách trùng trước khi lưu. Cột
-            “Dịch vụ” có thể chứa nhiều tên, ngăn cách bằng dấu chấm phẩy. BHXH,
-            hóa đơn điện tử, khấu trừ thuế TNCN và căn hộ có cột ngày bắt
-            đầu/hết hạn, gói dịch vụ và giá tiền riêng trong file mẫu.
+            “Dịch vụ” có thể chứa nhiều tên, ngăn cách bằng dấu chấm phẩy. Mỗi
+            dịch vụ có cột gói, giá và ngày bắt đầu/hết hạn riêng trong file
+            mẫu.
           </p>
           <div className="tool-actions">
             <label
